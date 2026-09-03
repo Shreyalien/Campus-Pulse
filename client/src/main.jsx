@@ -1,6 +1,344 @@
-import React,{useEffect,useMemo,useState} from 'react';import{createRoot}from'react-dom/client';import{motion,AnimatePresence}from'framer-motion';import{AreaChart,Area,XAxis,YAxis,Tooltip,ResponsiveContainer,BarChart,Bar}from'recharts';import{io}from'socket.io-client';import'./styles.css';
-const seed=[{id:1,title:'Wi-Fi outage — Library',category:'Wi-Fi',status:'Investigating',location:'Central Library',priority:'High',x:31,y:36},{id:2,title:'Shuttle delay at Gate B',category:'Transport',status:'Reported',location:'Gate B',priority:'Medium',x:68,y:64},{id:3,title:'Projector not working — CSE 401',category:'Classroom',status:'In progress',location:'Academic Building',priority:'High',x:54,y:29},{id:4,title:'Water dispenser empty',category:'Facilities',status:'Resolved',location:'Student Center',priority:'Low',x:75,y:35},{id:5,title:'Lost ID card',category:'Lost & Found',status:'Reported',location:'Cafeteria',priority:'Medium',x:44,y:69}];
-const trend=[{d:'Mon',n:8},{d:'Tue',n:12},{d:'Wed',n:9},{d:'Thu',n:17},{d:'Fri',n:14},{d:'Sat',n:7},{d:'Sun',n:11}],cats=[{n:'Wi-Fi',v:31},{n:'Classroom',v:24},{n:'Transport',v:18},{n:'Facilities',v:14},{n:'Other',v:9}];
-function App(){const[issues,setIssues]=useState(seed),[tab,setTab]=useState('Overview'),[active,setActive]=useState(null),[modal,setModal]=useState(false),[toast,setToast]=useState('');useEffect(()=>{const s=io('http://localhost:5000');s.on('issue:new',x=>setIssues(v=>[x,...v]));s.on('issue:updated',x=>setIssues(v=>v.map(i=>i.id===x.id?{...i,...x}:i)));return()=>s.close()},[]);const submit=async f=>{const r=await fetch('http://localhost:5000/api/issues',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(f)});if(r.ok){setModal(false);setToast('Report submitted');setTimeout(()=>setToast(''),2200)}};return <div className="app"><aside><div className="brand"><i/>CAMPUS<span>PULSE</span></div><small>LIVE CAMPUS INTELLIGENCE</small><nav>{['Overview','Live Map','Reports','Analytics'].map(x=><button className={tab===x?'active':''} onClick={()=>setTab(x)} key={x}>{x}</button>)}</nav><div className="system"><small>SYSTEM STATUS</small><b><i/>All systems operational</b><p>Last sync · just now</p></div><div className="user"><strong>SG</strong><div>Shreya G.<small>Student account</small></div></div></aside><main><header><div><small>THURSDAY · SEPT 03, 2026</small><h1>{tab}</h1></div><button className="primary" onClick={()=>setModal(true)}>＋ Report an issue</button></header>{tab==='Overview'?<><div className="stats">{[['ACTIVE ISSUES','12','+3 today'],['RESOLVED TODAY','28','92% response rate'],['AVG RESPONSE','18m','↓ 6m this week'],['CAMPUS PULSE','98.4%','stable']].map((x,i)=><motion.div className="stat" initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:i*.07}} key={x[0]}><small>{x[0]}</small><b>{x[1]}</b><em>{x[2]}</em></motion.div>)}</div><div className="grid"><section className="panel map"><div className="head"><div><small>LIVE CAMPUS MAP</small><h2>Issue activity</h2></div><span className="live">● LIVE</span></div><div className="mapbox"><div className="building one">SCIENCE<br/>BUILDING</div><div className="building two">LIBRARY</div><div className="building three">STUDENT<br/>CENTER</div><div className="road a"/><div className="road b"/>{issues.filter(x=>x.status!=='Resolved').map((x,i)=><motion.button className={'marker '+x.priority.toLowerCase()} style={{left:x.x+'%',top:x.y+'%'}} animate={{scale:[1,1.25,1]}} transition={{duration:2,repeat:Infinity,delay:i*.18}} onClick={()=>setActive(x)} key={x.id}><i/></motion.button>)}</div></section><section className="panel feed"><div className="head"><div><small>LIVE FEED</small><h2>Recent reports</h2></div></div>{issues.slice(0,6).map(x=><motion.div layout className="issue" onClick={()=>setActive(x)} key={x.id}><span>{x.category[0]}</span><div><b>{x.title}</b><small>{x.location} · just now</small></div><em>{x.status}</em></motion.div>)}</section></div><div className="bottom"><section className="panel"><div className="head"><div><small>7 DAY TREND</small><h2>Reports over time</h2></div></div><ResponsiveContainer width="100%" height={190}><AreaChart data={trend}><XAxis dataKey="d" axisLine={false} tickLine={false}/><YAxis hide/><Tooltip/><Area type="monotone" dataKey="n" fillOpacity={.12} fill="currentColor" strokeWidth={2}/></AreaChart></ResponsiveContainer></section><section className="panel"><div className="head"><div><small>ISSUE BREAKDOWN</small><h2>Top categories</h2></div></div><ResponsiveContainer width="100%" height={190}><BarChart data={cats} layout="vertical"><XAxis type="number" hide/><YAxis dataKey="n" type="category" width={80} axisLine={false} tickLine={false}/><Bar dataKey="v" fill="currentColor" radius={[0,5,5,0]}/></BarChart></ResponsiveContainer></section></div></>:<section className="panel placeholder"><div className="orb"/><h2>{tab}</h2><p>Production-ready next layer: filtering, map clustering, analytics drill-down and admin operations.</p></section>}</main><AnimatePresence>{active&&<motion.div className="overlay" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={()=>setActive(null)}><motion.div className="drawer" initial={{x:440}} animate={{x:0}} exit={{x:440}} onClick={e=>e.stopPropagation()}><button className="close" onClick={()=>setActive(null)}>×</button><small>ISSUE #{active.id}</small><h2>{active.title}</h2><p>{active.location}</p><div className="details"><div>Status<strong>{active.status}</strong></div><div>Priority<strong>{active.priority}</strong></div><div>Category<strong>{active.category}</strong></div><div>Reporter<strong>Student</strong></div></div><div className="timeline"><p><b>Reported</b><span>Issue received by Campus Pulse</span></p><p><b>Triaged</b><span>Operations team notified</span></p><p><b>Resolution</b><span>Awaiting next update</span></p></div></motion.div></motion.div>}{modal&&<Report close={()=>setModal(false)} submit={submit}/>} {toast&&<div className="toast">✓ {toast}</div>}</AnimatePresence></div>}
-function Report({close,submit}){const[f,setF]=useState({title:'',location:'',category:'Wi-Fi',priority:'Medium',description:''});return <div className="overlay"><motion.div className="modal" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}}><button className="close" onClick={close}>×</button><small>NEW CAMPUS REPORT</small><h2>What happened?</h2><p>Give operations enough context to act quickly.</p>{[['title','Issue title'],['location','Location']].map(([k,p])=><input key={k} placeholder={p} value={f[k]} onChange={e=>setF({...f,[k]:e.target.value})}/>)}<select value={f.category} onChange={e=>setF({...f,category:e.target.value})}>{['Wi-Fi','Classroom','Transport','Facilities','Lost & Found','Cafeteria'].map(x=><option key={x}>{x}</option>)}</select><select value={f.priority} onChange={e=>setF({...f,priority:e.target.value})}>{['Low','Medium','High'].map(x=><option key={x}>{x}</option>)}</select><textarea placeholder="Describe the issue" value={f.description} onChange={e=>setF({...f,description:e.target.value})}/><button className="primary full" disabled={!f.title||!f.location} onClick={()=>submit(f)}>Submit report</button></motion.div></div>}
-createRoot(document.getElementById('root')).render(<App/>);
+﻿import React, { useEffect, useState, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
+import { AnimatePresence } from 'framer-motion';
+import { getSocket } from './services/socket';
+import {
+  fetchIssues,
+  fetchIssueById,
+  createIssue,
+  voteIssue,
+  appealIssue,
+  updateIssue,
+  fetchNotifications,
+  markNotificationsRead,
+  fetchAnalyticsSummary,
+  fetchAnalyticsTrends,
+  fetchAnalyticsCategories,
+  fetchAnalyticsDepartments
+} from './services/api';
+
+import Sidebar from './components/Sidebar';
+import Navbar from './components/Navbar';
+import IssueDrawer from './components/IssueDrawer';
+import NotificationDrawer from './components/NotificationDrawer';
+import ObjectionModal from './components/ObjectionModal';
+import ReportModal from './components/ReportModal';
+
+import Overview from './pages/Overview';
+import Objections from './pages/Objections';
+import LiveMap from './pages/LiveMap';
+import Reports from './pages/Reports';
+import Admin from './pages/Admin';
+
+import './styles.css';
+
+function App() {
+  const [currentTab, setTab] = useState('Overview');
+  const [userRole, setUserRole] = useState('student'); // 'student' or 'admin'
+
+  const [issues, setIssues] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [trends, setTrends] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  const [selectedIssue, setSelectedIssue] = useState(null);
+  const [isObjectionModalOpen, setObjectionModalOpen] = useState(false);
+  const [isReportModalOpen, setReportModalOpen] = useState(false);
+  const [isNotificationOpen, setNotificationOpen] = useState(false);
+  const [toast, setToast] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3200);
+  };
+
+  const loadAllData = async () => {
+    try {
+      const [issuesData, sumData, trData, catData, deptData, notifData] = await Promise.all([
+        fetchIssues(),
+        fetchAnalyticsSummary(),
+        fetchAnalyticsTrends(),
+        fetchAnalyticsCategories(),
+        fetchAnalyticsDepartments(),
+        fetchNotifications()
+      ]);
+      setIssues(issuesData);
+      setSummary(sumData);
+      setTrends(trData);
+      setCategories(catData);
+      setDepartments(deptData);
+      setNotifications(notifData);
+    } catch (err) {
+      console.error('Data loading error:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadAllData();
+
+    const socket = getSocket();
+
+    socket.on('issue:new', (newIssue) => {
+      setIssues((prev) => [newIssue, ...prev.filter(i => i.id !== newIssue.id)]);
+      showToast(`📢 ${newIssue.type === 'student_objection' ? 'New Objection' : 'New Report'}: ${newIssue.title}`);
+      fetchAnalyticsSummary().then(setSummary).catch(console.error);
+    });
+
+    socket.on('issue:updated', (updated) => {
+      setIssues((prev) => prev.map(i => i.id === updated.id ? { ...i, ...updated } : i));
+      setSelectedIssue((curr) => (curr && curr.id === updated.id ? { ...curr, ...updated } : curr));
+      showToast(`⚡ Ticket #${updated.id} status updated to "${updated.status}"`);
+      fetchAnalyticsSummary().then(setSummary).catch(console.error);
+    });
+
+    socket.on('objection:voted', ({ issue_id, upvotes }) => {
+      setIssues((prev) => prev.map(i => i.id === issue_id ? { ...i, upvotes } : i));
+      setSelectedIssue((curr) => (curr && curr.id === issue_id ? { ...curr, upvotes } : curr));
+    });
+
+    socket.on('notification:new', (notif) => {
+      setNotifications((prev) => [notif, ...prev]);
+    });
+
+    return () => {
+      socket.off('issue:new');
+      socket.off('issue:updated');
+      socket.off('objection:voted');
+      socket.off('notification:new');
+    };
+  }, []);
+
+  const handleSelectIssue = async (issue) => {
+    try {
+      const full = await fetchIssueById(issue.id);
+      setSelectedIssue(full);
+    } catch (err) {
+      setSelectedIssue(issue);
+    }
+  };
+
+  const handleVote = async (issueId) => {
+    try {
+      const res = await voteIssue(issueId, userRole === 'admin' ? 'OP-001' : '251-15-467');
+      setIssues((prev) => prev.map(i => i.id === issueId ? { ...i, upvotes: res.upvotes, has_voted: res.has_voted } : i));
+      if (selectedIssue && selectedIssue.id === issueId) {
+        setSelectedIssue((curr) => ({ ...curr, upvotes: res.upvotes, has_voted: res.has_voted }));
+      }
+      showToast(res.has_voted ? '✓ Objection supported' : 'Vote removed');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateObjection = async (data) => {
+    try {
+      const created = await createIssue({
+        ...data,
+        reporter_name: userRole === 'admin' ? 'Admin Staff' : 'Shreya Golder (CR)'
+      });
+      showToast('✓ Formal objection lodged and submitted for triage');
+      loadAllData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateReport = async (data) => {
+    try {
+      await createIssue(data);
+      showToast('✓ Incident report submitted');
+      loadAllData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAppeal = async (issueId, appealReason) => {
+    try {
+      const updated = await appealIssue(issueId, appealReason, userRole === 'admin' ? 'Faculty Member' : 'Shreya Golder');
+      setSelectedIssue(updated);
+      setIssues((prev) => prev.map(i => i.id === issueId ? updated : i));
+      showToast('✓ Appeal submitted to University Syndicate');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateStatus = async (issueId, updateData) => {
+    try {
+      const updated = await updateIssue(issueId, {
+        ...updateData,
+        author_name: userRole === 'admin' ? 'Engr. M. Rafiq (Ops Lead)' : 'Student Desk'
+      });
+      setSelectedIssue(updated);
+      setIssues((prev) => prev.map(i => i.id === issueId ? updated : i));
+      showToast(`✓ Case #${issueId} updated`);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkRead = async () => {
+    try {
+      await markNotificationsRead();
+      setNotifications((prev) => prev.map(n => ({ ...n, is_read: 1 })));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const unreadNotifs = notifications.filter(n => !n.is_read).length;
+  const objectionCount = issues.filter(i => (i.type === 'student_objection' || i.type === 'petition') && i.status !== 'Resolved').length;
+
+  const searchedIssues = useMemo(() => {
+    if (!searchTerm.trim()) return issues;
+    const q = searchTerm.toLowerCase();
+    return issues.filter(i =>
+      i.title?.toLowerCase().includes(q) ||
+      i.description?.toLowerCase().includes(q) ||
+      i.location?.toLowerCase().includes(q)
+    );
+  }, [issues, searchTerm]);
+
+  return (
+    <div className="app-shell">
+      <Sidebar
+        currentTab={currentTab}
+        setTab={setTab}
+        userRole={userRole}
+        setUserRole={setUserRole}
+        objectionCount={objectionCount}
+        openObjectionModal={() => setObjectionModalOpen(true)}
+        openReportModal={() => setReportModalOpen(true)}
+      />
+
+      <div className="main-content-area">
+        <Navbar
+          currentTab={currentTab}
+          userRole={userRole}
+          notifications={notifications}
+          unreadCount={unreadNotifs}
+          onOpenNotifications={() => setNotificationOpen(true)}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
+
+        <main className="content-body">
+          {currentTab === 'Overview' && (
+            <Overview
+              summary={summary}
+              trends={trends}
+              categories={categories}
+              issues={searchedIssues}
+              onSelectIssue={handleSelectIssue}
+              onOpenObjectionModal={() => setObjectionModalOpen(true)}
+              onNavigateTab={setTab}
+            />
+          )}
+
+          {currentTab === 'Objections' && (
+            <Objections
+              issues={searchedIssues}
+              onSelectIssue={handleSelectIssue}
+              onVote={handleVote}
+              onOpenObjectionModal={() => setObjectionModalOpen(true)}
+            />
+          )}
+
+          {currentTab === 'Live Map' && (
+            <LiveMap
+              issues={searchedIssues}
+              onSelectIssue={handleSelectIssue}
+            />
+          )}
+
+          {currentTab === 'Reports' && (
+            <Reports
+              issues={searchedIssues}
+              onSelectIssue={handleSelectIssue}
+              onVote={handleVote}
+            />
+          )}
+
+          {currentTab === 'Admin' && (
+            <Admin
+              issues={searchedIssues}
+              summary={summary}
+              departments={departments}
+              onSelectIssue={handleSelectIssue}
+              onUpdateStatus={handleUpdateStatus}
+            />
+          )}
+        </main>
+      </div>
+
+      {/* Slide-out Investigation Drawer */}
+      <AnimatePresence>
+        {selectedIssue && (
+          <IssueDrawer
+            issue={selectedIssue}
+            onClose={() => setSelectedIssue(null)}
+            onVote={handleVote}
+            onAppeal={handleAppeal}
+            onUpdateStatus={handleUpdateStatus}
+            userRole={userRole}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Notifications Drawer */}
+      <AnimatePresence>
+        {isNotificationOpen && (
+          <NotificationDrawer
+            isOpen={isNotificationOpen}
+            onClose={() => setNotificationOpen(false)}
+            notifications={notifications}
+            onMarkRead={handleMarkRead}
+            onSelectIssue={(id) => {
+              const item = issues.find(i => i.id === id);
+              if (item) handleSelectIssue(item);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Formal Student Objection Modal */}
+      <AnimatePresence>
+        {isObjectionModalOpen && (
+          <ObjectionModal
+            isOpen={isObjectionModalOpen}
+            onClose={() => setObjectionModalOpen(false)}
+            onSubmit={handleCreateObjection}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Quick Report Modal */}
+      <AnimatePresence>
+        {isReportModalOpen && (
+          <ReportModal
+            isOpen={isReportModalOpen}
+            onClose={() => setReportModalOpen(false)}
+            onSubmit={handleCreateReport}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Live Toast Notice */}
+      <AnimatePresence>
+        {toast && (
+          <div className="live-toast-banner">
+            <span>{toast}</span>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<App />);
