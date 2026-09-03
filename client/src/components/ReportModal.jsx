@@ -1,6 +1,6 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { PlusCircle, X, Send } from 'lucide-react';
+import { PlusCircle, X, Send, Clock, MapPin } from 'lucide-react';
 
 export default function ReportModal({ isOpen, onClose, onSubmit }) {
   const [formData, setFormData] = useState({
@@ -47,8 +47,8 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
               <PlusCircle size={18} className="text-lime" />
             </div>
             <div>
-              <h2>REPORT CAMPUS ISSUE</h2>
-              <p>Quick operational ticket for facilities, labs, and equipment</p>
+              <h2>ক্যাম্পাস সমস্যা অনলাইন রিপোর্ট</h2>
+              <p>Quick Online Campus Issue & Maintenance Ticket</p>
             </div>
           </div>
           <button className="modal-close-btn" onClick={onClose}><X size={18} /></button>
@@ -56,11 +56,11 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
 
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
-            <label>Issue Title *</label>
+            <label>সমস্যার শিরোনাম (Issue Title) *</label>
             <input
               type="text"
               required
-              placeholder="e.g., Wi-Fi outage — Central Library 2nd Floor"
+              placeholder="যেমন: সেন্ট্রাল লাইব্রেরি ৩য় তলার ওয়াইফাই কাজ করছে না"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
@@ -68,26 +68,26 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
 
           <div className="form-row-2">
             <div className="form-group">
-              <label>Category *</label>
+              <label>ক্যাটাগরি (Category) *</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               >
                 <option value="IT & Labs">IT & Labs / Wi-Fi</option>
                 <option value="Facilities">Classroom & Facilities</option>
-                <option value="Transport">Transport & Parking</option>
-                <option value="Cafeteria">Cafeteria / Drinking Water</option>
+                <option value="Transport">Transport & Shuttle</option>
+                <option value="Cafeteria">Cafeteria / Water</option>
                 <option value="Hostel">Hostel Utilities</option>
                 <option value="Lost & Found">Lost & Found</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label>Location *</label>
+              <label>লোকেশন / রুম নং (Location) *</label>
               <input
                 type="text"
                 required
-                placeholder="e.g., Academic Building Room 604"
+                placeholder="যেমন: একাডেমিক বিল্ডিং রুম ৬০৪"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               />
@@ -95,23 +95,23 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
           </div>
 
           <div className="form-group">
-            <label>Severity Priority</label>
+            <label>জরুরিতা (Priority)</label>
             <select
               value={formData.priority}
               onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
             >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-              <option value="Critical">Critical</option>
+              <option value="Low">Low (সাধারণ রক্ষণাবেক্ষণ · ৭২ ঘণ্টা SLA)</option>
+              <option value="Medium">Medium (স্ট্যান্ডার্ড · ৪৮ ঘণ্টা SLA)</option>
+              <option value="High">High (জরুরি সমস্যা · ৩৬ ঘণ্টা SLA)</option>
+              <option value="Critical">Critical (অতি জরুরি · ২৪ ঘণ্টা SLA)</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label>Description & Context</label>
+            <label>বিবরণ (Description & Details)</label>
             <textarea
               rows={3}
-              placeholder="Provide specific details so maintenance engineers can triage swiftly..."
+              placeholder="রক্ষণাবেক্ষণ টিমের সুবিধার জন্য বিস্তারিত বিবরণ দিন..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
@@ -119,11 +119,11 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
 
           <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancel
+              বাতিল (Cancel)
             </button>
             <button type="submit" className="btn-primary" disabled={submitting}>
               <Send size={14} />
-              <span>{submitting ? 'Dispatching...' : 'Dispatch Ticket'}</span>
+              <span>{submitting ? 'পাঠানো হচ্ছে...' : 'অনলাইনে রিপোর্ট জমা দিন'}</span>
             </button>
           </div>
         </form>

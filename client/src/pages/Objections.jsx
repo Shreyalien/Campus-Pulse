@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   AlertOctagon,
@@ -97,6 +97,44 @@ export default function Objections({
           <div className="hero-guarantee">
             <CheckCircle size={12} className="text-lime" />
             <span>Encrypted submission · Optional Anonymous Whistleblower Protection</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Student Online Reporting & SLA Guide Banner */}
+      <div className="student-guide-panel">
+        <div className="guide-header">
+          <HelpCircle size={15} className="text-lime" />
+          <h4>ছাত্রছাত্রীদের জন্য অনলাইন আপত্তি দাখিল ও SLA নির্দেশিকা (Student Guide)</h4>
+        </div>
+        <div className="guide-steps-grid">
+          <div className="guide-step-card">
+            <span className="step-num">১</span>
+            <div>
+              <strong>অনলাইনে আপত্তি দাখিল</strong>
+              <p>বিষয় ও বিভাগ (Academic, Transport, Cafeteria) নির্বাচন করে বিবরণ দিন।</p>
+            </div>
+          </div>
+          <div className="guide-step-card">
+            <span className="step-num">২</span>
+            <div>
+              <strong>গোপনীয়তা রক্ষা (Anonymous)</strong>
+              <p>ইচ্ছা হলে নিজের নাম ও আইডি সম্পূর্ণ গোপন রেখে রিপোর্ট করার সুযোগ।</p>
+            </div>
+          </div>
+          <div className="guide-step-card">
+            <span className="step-num">৩</span>
+            <div>
+              <strong>SLA সময়সীমা কাউন্টডাউন</strong>
+              <p>SLA মানে প্রতিশ্রুত সময়—কর্তৃপক্ষ সর্বোচ্চ ২৪-৪৮ ঘণ্টার মধ্যে পদক্ষেপ নিতে বাধ্য।</p>
+            </div>
+          </div>
+          <div className="guide-step-card">
+            <span className="step-num">৪</span>
+            <div>
+              <strong>শুনানি ও আপিল অধিকার</strong>
+              <p>সিদ্ধান্তে আপত্তি থাকলে ছাত্রছাত্রীরা সিন্ডিকেটে সরাসরি আপিল করতে পারবেন।</p>
+            </div>
           </div>
         </div>
       </div>

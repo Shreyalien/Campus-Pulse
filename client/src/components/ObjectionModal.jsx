@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -7,7 +7,9 @@ import {
   Send,
   HelpCircle,
   FileCheck,
-  Building2
+  Building2,
+  Image as ImageIcon,
+  Clock
 } from 'lucide-react';
 
 export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
@@ -21,7 +23,8 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
     is_anonymous: false,
     reporter_name: 'Shreya Golder (CR)',
     reporter_id: '251-15-467',
-    description: ''
+    description: '',
+    evidence_url: ''
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -57,6 +60,13 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
     'General Campus Operations'
   ];
 
+  const getSlaHours = (p) => {
+    if (p === 'Critical') return 24;
+    if (p === 'High') return 36;
+    if (p === 'Medium') return 48;
+    return 72;
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <motion.div
@@ -72,8 +82,8 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
               <AlertTriangle size={18} className="text-lime" />
             </div>
             <div>
-              <h2>LODGE FORMAL STUDENT OBJECTION</h2>
-              <p>Official grievance and campus petition submission protocol</p>
+              <h2>অনলাইন স্টুডেন্ট আপত্তি ও অভিযোগ দাখিল</h2>
+              <p>Lodge Formal Student Objection & Campus Petition Online</p>
             </div>
           </div>
           <button className="modal-close-btn" onClick={onClose}><X size={18} /></button>
@@ -88,8 +98,8 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
             >
               <FileCheck size={16} />
               <div>
-                <strong>Formal Objection</strong>
-                <small>Individual / batch academic or operational dispute</small>
+                <strong>Formal Objection (ব্যক্তিগত/ব্যাচ আপত্তি)</strong>
+                <small>একাডেমিক গ্রেডিং, এটেন্ডেন্স বা সুনির্দিষ্ট সমস্যা</small>
               </div>
             </button>
             <button
@@ -99,18 +109,18 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
             >
               <Building2 size={16} />
               <div>
-                <strong>Campus Petition</strong>
-                <small>Requires 100 student signatures for executive hearing</small>
+                <strong>Campus Petition (সম্মিলিত পিটিশন)</strong>
+                <small>১০০ জন ছাত্রছাত্রীর স্বাক্ষরে সিন্ডিকেট শুনানির জন্য</small>
               </div>
             </button>
           </div>
 
           <div className="form-group">
-            <label>Objection Headline / Subject *</label>
+            <label>আপত্তির বিষয় বা শিরোনাম (Subject / Title) *</label>
             <input
               type="text"
               required
-              placeholder="e.g., Unfair Attendance Fine during CSE311 Portal Downtime"
+              placeholder="যেমন: পোর্টাল ডাউন থাকায় CSE311 অ্যাসাইনমেন্ট জরিমানা প্রত্যাহার"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
@@ -118,7 +128,7 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
 
           <div className="form-row-2">
             <div className="form-group">
-              <label>Target Department / Authority *</label>
+              <label>সংশ্লিষ্ট বিভাগ বা কর্তৃপক্ষ (Target Department) *</label>
               <select
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
@@ -130,57 +140,79 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
             </div>
 
             <div className="form-group">
-              <label>Category *</label>
+              <label>ক্যাটাগরি (Category) *</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               >
-                <option value="Academic">Academic / Grading / Attendance</option>
-                <option value="Transport">Transport & Shuttle Fleet</option>
-                <option value="Cafeteria">Cafeteria & Food Hygiene</option>
-                <option value="IT & Labs">IT & Lab Equipment</option>
-                <option value="Facilities">Campus Facilities & Utilities</option>
-                <option value="Hostel">Hostel & Accommodation</option>
-                <option value="Disciplinary">Disciplinary & Conduct</option>
+                <option value="Academic">Academic (পরীক্ষা, গ্রেডিং, এটেন্ডেন্স)</option>
+                <option value="Transport">Transport (বাস ও শাটল রুট)</option>
+                <option value="Cafeteria">Cafeteria (খাবারের মান ও দাম)</option>
+                <option value="IT & Labs">IT & Labs (ল্যাব পিসি, সফটওয়্যার, ওয়াইফাই)</option>
+                <option value="Facilities">Facilities (ক্লাসরুম প্রজেক্টর, ওয়াশরুম, পানি)</option>
+                <option value="Hostel">Hostel (আবাসিক হল সংক্রান্ত)</option>
+                <option value="Disciplinary">Disciplinary (হয়রানি/শৃঙ্খলা)</option>
               </select>
             </div>
           </div>
 
           <div className="form-row-2">
             <div className="form-group">
-              <label>Campus Location / Hall / Room *</label>
+              <label>ক্যাম্পাস লোকেশন (Location) *</label>
               <input
                 type="text"
                 required
-                placeholder="e.g., Academic Building 402, Gate B, Cafeteria L-4"
+                placeholder="যেমন: একাডেমিক বিল্ডিং ৪০২, গেট বি, লাইব্রেরি ২য় তলা"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               />
             </div>
 
             <div className="form-group">
-              <label>Urgency / Severity Priority</label>
+              <label>জরুরিতা ও সমাধানের সময়সীমা (Priority & SLA)</label>
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
               >
-                <option value="Low">Low (Routine Review · 72h SLA)</option>
-                <option value="Medium">Medium (Standard Triage · 48h SLA)</option>
-                <option value="High">High (High Priority · 36h SLA)</option>
-                <option value="Critical">Critical (Immediate Escalation · 24h SLA)</option>
+                <option value="Low">Low (সাধারণ বিষয় · ৭২ ঘণ্টা SLA)</option>
+                <option value="Medium">Medium (স্ট্যান্ডার্ড · ৪৮ ঘণ্টা SLA)</option>
+                <option value="High">High (উচ্চ অগ্রাধিকার · ৩৬ ঘণ্টা SLA)</option>
+                <option value="Critical">Critical (জরুরি হস্তক্ষেপ · ২৪ ঘণ্টা SLA)</option>
               </select>
             </div>
           </div>
 
+          {/* SLA Explainer Callout */}
+          <div className="modal-sla-callout">
+            <Clock size={14} className="text-lime" />
+            <div>
+              <strong>প্রশাসনের সর্বোচ্চ নিষ্পত্তির সময়সীমা (SLA): {getSlaHours(formData.priority)} ঘণ্টা</strong>
+              <p>SLA (Service Level Agreement) হলো বিশ্ববিদ্যালয় প্রশাসনের প্রতিশ্রুতি—অভিযোগ জমা দেওয়ার সর্বোচ্চ এই সময়ের মধ্যে কর্তৃপক্ষ পদক্ষেপ নিতে বাধ্য।</p>
+            </div>
+          </div>
+
           <div className="form-group">
-            <label>Comprehensive Ground of Objection & Affected Details *</label>
+            <label>বিস্তারিত বিবরণ ও আপত্তির কারণ (Detailed Grounds) *</label>
             <textarea
               required
-              rows={4}
-              placeholder="State the detailed sequence of events, course code, instructor/authority context, and reason why administrative redressal is requested..."
+              rows={3}
+              placeholder="ঘটনার সময়, কোর্স কোড, সংশ্লিষ্ট শিক্ষক/কর্মকর্তার প্রসঙ্গ এবং আপনি কী প্রতিকার চাচ্ছেন তা স্পষ্টভাবে লিখুন..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
+          </div>
+
+          <div className="form-group">
+            <label>প্রমাণ বা স্ক্রিনশট লিংক (Evidence Image / Screenshot URL - Optional)</label>
+            <div className="evidence-input-wrap">
+              <ImageIcon size={15} className="text-dim" />
+              <input
+                type="text"
+                placeholder="https://... (ল্যাব ইরর, নোটিশ বা পেমেন্ট রসিদের লিংক)"
+                value={formData.evidence_url}
+                onChange={(e) => setFormData({ ...formData, evidence_url: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="form-anonymous-toggle">
@@ -191,19 +223,19 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
                 onChange={(e) => setFormData({ ...formData, is_anonymous: e.target.checked })}
               />
               <div className="toggle-text">
-                <strong>Protect Identity (Anonymous Filing)</strong>
-                <span>Hides your name and student ID from public boards; visible only to the Ombudsperson.</span>
+                <strong>গোপনীয়তা রক্ষা করুন (Anonymous Whistleblower Mode)</strong>
+                <span>পাবলিক বোর্ডে আপনার নাম ও স্টুডেন্ট আইডি গোপন থাকবে; শুধু তদন্তকারী অমবুডস্পারসন দেখতে পাবেন।</span>
               </div>
             </label>
           </div>
 
           <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancel
+              বাতিল (Cancel)
             </button>
             <button type="submit" className="btn-primary" disabled={submitting}>
               <Send size={14} />
-              <span>{submitting ? 'Lodging Objection...' : 'Submit to Operations Desk'}</span>
+              <span>{submitting ? 'জমা হচ্ছে...' : 'অনলাইনে জমা দিন (Submit Online)'}</span>
             </button>
           </div>
         </form>

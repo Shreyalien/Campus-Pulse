@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -114,8 +114,16 @@ export default function IssueDrawer({
               <strong>{issue.category}</strong>
             </div>
             <div className="drawer-stat-card">
-              <small>SLA TARGET</small>
-              <strong>{issue.sla_hours} Hours</strong>
+              <small>সমাধানের সময়সীমা (SLA)</small>
+              <strong>{issue.sla_hours} ঘণ্টা / Hours</strong>
+            </div>
+          </div>
+
+          <div className="sla-explainer-banner">
+            <Clock size={15} className="text-amber" />
+            <div>
+              <strong>SLA (Service Level Agreement) কী?</strong>
+              <p>বিশ্ববিদ্যালয় কর্তৃপক্ষের নীতি অনুযায়ী অভিযোগ বা আপত্তি দাখিলের পর সর্বোচ্চ <strong>{issue.sla_hours} ঘণ্টার মধ্যে</strong> দায়িত্বপ্রাপ্ত বিভাগ শুনানি গ্রহণ বা সমাধানের প্রাথমিক পদক্ষেপ নিতে বাধ্য।</p>
             </div>
           </div>
 

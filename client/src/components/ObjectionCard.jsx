@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import {
   ThumbsUp,
@@ -8,7 +8,9 @@ import {
   UserCheck,
   Building,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  HelpCircle,
+  ExternalLink
 } from 'lucide-react';
 
 export default function ObjectionCard({ issue, onSelect, onVote }) {
@@ -48,7 +50,7 @@ export default function ObjectionCard({ issue, onSelect, onVote }) {
       <div className="card-top-row">
         <div className="card-tags">
           <span className={`type-tag ${isPetition ? 'tag-petition' : isObjection ? 'tag-objection' : 'tag-issue'}`}>
-            {isPetition ? 'CAMPUS PETITION' : isObjection ? 'STUDENT OBJECTION' : 'CAMPUS REPORT'}
+            {isPetition ? 'CAMPUS PETITION (পিটিশন)' : isObjection ? 'STUDENT OBJECTION (আপত্তি)' : 'CAMPUS REPORT (রিপোর্ট)'}
           </span>
           <span className="category-tag">{issue.category}</span>
           <span className={`priority-pill ${getPriorityClass(issue.priority)}`}>
@@ -68,8 +70,8 @@ export default function ObjectionCard({ issue, onSelect, onVote }) {
       {isPetition && (
         <div className="petition-progress-box">
           <div className="petition-progress-meta">
-            <span><strong>{issue.upvotes}</strong> signatures collected</span>
-            <span>Target: 100 (Threshold)</span>
+            <span><strong>{issue.upvotes}</strong> জন শিক্ষার্থী স্বাক্ষর করেছেন</span>
+            <span>সিন্ডিকেট শুনানির লক্ষ্যমাত্রা: ১০০</span>
           </div>
           <div className="progress-track">
             <div
@@ -80,7 +82,7 @@ export default function ObjectionCard({ issue, onSelect, onVote }) {
           {issue.upvotes >= 100 && (
             <div className="threshold-reached-badge">
               <CheckCircle2 size={11} />
-              <span>Official Admin Escalation Threshold Reached</span>
+              <span>১০০টি স্বাক্ষর সম্পন্ন · সিন্ডিকেট শুনানির থ্রেশহোল্ড পূর্ণ</span>
             </div>
           )}
         </div>
@@ -97,17 +99,17 @@ export default function ObjectionCard({ issue, onSelect, onVote }) {
         </div>
         <div className="meta-item">
           <UserCheck size={12} className="meta-icon" />
-          <span>{issue.is_anonymous ? 'Anonymous Student' : (issue.reporter_name || 'Student')}</span>
+          <span>{issue.is_anonymous ? 'গোপন শিক্ষার্থী (Anonymous)' : (issue.reporter_name || 'Student')}</span>
         </div>
-        <div className="meta-item">
-          <Clock size={12} className="meta-icon" />
-          <span>Target SLA: {issue.sla_hours}h</span>
+        <div className="meta-item meta-sla" title="SLA (Service Level Agreement): বিশ্ববিদ্যালয় কর্তৃপক্ষের সর্বোচ্চ সমাধানের নির্ধারিত সময়সীমা">
+          <Clock size={12} className="meta-icon text-amber" />
+          <span>সমাধান সময়সীমা (SLA): <strong>{issue.sla_hours} ঘণ্টা</strong></span>
         </div>
       </div>
 
       <div className="card-footer-row">
         <div className="footer-timestamp">
-          Logged: {issue.created_at?.slice(0, 16) || 'Today'}
+          দাখিল: {issue.created_at?.slice(0, 16) || 'Today'}
         </div>
 
         <button
@@ -116,10 +118,10 @@ export default function ObjectionCard({ issue, onSelect, onVote }) {
             e.stopPropagation();
             onVote(issue.id);
           }}
-          title="Support / Upvote this objection"
+          title="এই আপত্তিতে আপনার সমর্থন দিন"
         >
           <ThumbsUp size={13} className="vote-icon" />
-          <span>{issue.has_voted ? 'Supported' : 'Endorse'} ({issue.upvotes || 0})</span>
+          <span>{issue.has_voted ? 'সমর্থন দিয়েছেন' : 'সমর্থন দিন (Endorse)'} ({issue.upvotes || 0})</span>
         </button>
       </div>
     </motion.div>

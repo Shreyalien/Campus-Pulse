@@ -2508,3 +2508,141 @@ button {
   .objections-grid { grid-template-columns: 1fr; }
   .drawer-panel { width: 100%; }
 }
+
+/* SLA Callouts & Student Guide Additions */
+.modal-sla-callout {
+  background: rgba(217, 255, 98, 0.08);
+  border: 1px solid rgba(217, 255, 98, 0.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.modal-sla-callout strong {
+  font-size: 11px;
+  color: var(--accent-lime);
+  display: block;
+}
+
+.modal-sla-callout p {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.evidence-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #111822;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.evidence-input-wrap input {
+  border: none !important;
+  background: none !important;
+  padding: 10px 0 !important;
+  width: 100%;
+}
+
+.sla-explainer-banner {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.sla-explainer-banner strong {
+  font-size: 11px;
+  color: var(--accent-amber);
+  display: block;
+}
+
+.sla-explainer-banner p {
+  font-size: 11px;
+  color: #c9d4df;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.student-guide-panel {
+  background: #0d141e;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.guide-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.guide-header h4 {
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.guide-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.guide-step-card {
+  background: #111a26;
+  border: 1px solid #1c2738;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(217, 255, 98, 0.15);
+  color: var(--accent-lime);
+  font-size: 11px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.guide-step-card strong {
+  font-size: 11px;
+  color: #fff;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.guide-step-card p {
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .guide-steps-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .guide-steps-grid {
+    grid-template-columns: 1fr;
+  }
+}
