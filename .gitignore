@@ -9,3 +9,8 @@ campus-pulse.db
 campus-pulse.db-journal
 .DS_Store
 Thumbs.db
+
+campus-pulse.db-shm
+campus-pulse.db-wal
+*.db
+*.db-*
