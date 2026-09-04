@@ -133,5 +133,5 @@ Adheres to a **Command-Center Dark Palette**:
 ---
 
 ## 👥 Contributors & Maintainers
-Developed for **Daffodil International University (DIU)** Campus Operations.
-* **Lead Developer**: Shreya Golder (`251-15-467@diu.edu.bd`)
+Developed for University Campus Operations & Student Objection Redressal.
+* **Developed by**: Shreya Golder

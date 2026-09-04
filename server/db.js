@@ -22,12 +22,14 @@ function initDb() {
 
     CREATE TABLE IF NOT EXISTS issues (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_code TEXT,
       title TEXT NOT NULL,
       description TEXT,
       type TEXT DEFAULT 'campus_issue', -- 'campus_issue', 'student_objection', 'petition'
       category TEXT DEFAULT 'General', -- 'Academic', 'Facilities', 'Transport', 'Cafeteria', 'IT & Labs', 'Hostel', 'Disciplinary', 'Lost & Found'
       department TEXT DEFAULT 'General Operations',
       location TEXT NOT NULL,
+      building TEXT DEFAULT 'Central Campus',
       lat REAL DEFAULT 23.8767,
       lng REAL DEFAULT 90.3204,
       map_x REAL DEFAULT 50,
@@ -36,7 +38,7 @@ function initDb() {
       status TEXT DEFAULT 'Reported', -- 'Reported', 'Triaged', 'Under Investigation', 'Hearing Scheduled', 'Resolved', 'Appealed'
       is_anonymous INTEGER DEFAULT 0,
       reporter_name TEXT DEFAULT 'Student',
-      reporter_id TEXT DEFAULT '251-15-467',
+      reporter_id TEXT DEFAULT 'STU-2041',
       assignee_name TEXT DEFAULT 'Unassigned',
       sla_hours INTEGER DEFAULT 48,
       upvotes INTEGER DEFAULT 0,
@@ -77,14 +79,20 @@ function initDb() {
     );
   `);
 
-  // Migration check: add evidence_url to issues if missing
+  // Migration check: add ticket_code, building, evidence_url to issues if missing
   try {
     const cols = db.prepare('PRAGMA table_info(issues)').all().map(c => c.name);
+    if (!cols.includes('ticket_code')) {
+      db.exec('ALTER TABLE issues ADD COLUMN ticket_code TEXT');
+    }
+    if (!cols.includes('building')) {
+      db.exec('ALTER TABLE issues ADD COLUMN building TEXT DEFAULT "Central Campus"');
+    }
     if (!cols.includes('evidence_url')) {
       db.exec('ALTER TABLE issues ADD COLUMN evidence_url TEXT');
     }
   } catch (err) {
-    // Column may already exist
+    // Columns may already exist
   }
 
   // Seed default users if empty
@@ -108,17 +116,17 @@ function seedUsers() {
 
   const users = [
     {
-      name: 'Shreya Golder',
-      email: 'student@diu.edu.bd',
-      student_id: '251-15-467',
+      name: 'Tanvir Ahmed (CR)',
+      email: 'student@campus.edu',
+      student_id: 'STU-2041',
       password_hash: bcrypt.hashSync('password123', 10),
       role: 'student',
       department: 'Department of CSE',
-      avatar: 'SG'
+      avatar: 'TA'
     },
     {
       name: 'Engr. M. Rafiq',
-      email: 'admin@diu.edu.bd',
+      email: 'admin@campus.edu',
       student_id: 'OPS-LEAD-01',
       password_hash: bcrypt.hashSync('admin123', 10),
       role: 'admin',
@@ -127,7 +135,7 @@ function seedUsers() {
     },
     {
       name: 'Dr. M. Rahman',
-      email: 'faculty@diu.edu.bd',
+      email: 'faculty@campus.edu',
       student_id: 'FAC-CSE-102',
       password_hash: bcrypt.hashSync('faculty123', 10),
       role: 'staff',
@@ -144,12 +152,12 @@ function seedUsers() {
 function seedIssues() {
   const insertIssue = db.prepare(`
     INSERT INTO issues (
-      title, description, type, category, department, location, map_x, map_y,
-      priority, status, is_anonymous, reporter_name, reporter_id, assignee_name,
+      ticket_code, title, description, type, category, department, location, building,
+      map_x, map_y, priority, status, is_anonymous, reporter_name, reporter_id, assignee_name,
       sla_hours, upvotes, official_verdict, evidence_url, created_at, updated_at
     ) VALUES (
-      @title, @description, @type, @category, @department, @location, @map_x, @map_y,
-      @priority, @status, @is_anonymous, @reporter_name, @reporter_id, @assignee_name,
+      @ticket_code, @title, @description, @type, @category, @department, @location, @building,
+      @map_x, @map_y, @priority, @status, @is_anonymous, @reporter_name, @reporter_id, @assignee_name,
       @sla_hours, @upvotes, @official_verdict, @evidence_url, @created_at, @updated_at
     )
   `);
@@ -166,157 +174,170 @@ function seedIssues() {
 
   const sampleIssues = [
     {
-      title: 'Student Objection: Unfair Attendance Fine for CSE311 (Portal Server Crash)',
-      description: 'During the mid-term submission deadline on Sunday 11:50 PM, the university portal threw 502 Bad Gateway. 45 students were marked absent or penalized unfairly with attendance fines. We demand immediate fine revocation and review.',
+      ticket_code: 'CP2485',
+      title: 'Dorm A Facility Issue — Elevator Hydraulic Vibration',
+      description: 'Elevator in Dorm A building B wing produces severe shuddering between 3rd and 5th floor. Safety interlock inspected. Immediate technician check required.',
+      type: 'campus_issue',
+      category: 'Facilities',
+      department: 'Estate Maintenance & Dormitory Support',
+      location: 'Dorm A, Wing B',
+      building: 'Dorms',
+      map_x: 28,
+      map_y: 48,
+      priority: 'High',
+      status: 'Reported',
+      is_anonymous: 0,
+      reporter_name: 'Tanvir Ahmed (CR)',
+      reporter_id: 'STU-2041',
+      assignee_name: 'Unassigned',
+      sla_hours: 24,
+      upvotes: 24,
+      official_verdict: null,
+      evidence_url: null,
+      created_at: '2026-09-04 14:32:00',
+      updated_at: '2026-09-04 14:32:00',
+      updates: [
+        { author_name: 'Campus Guard Desk', author_role: 'Reporter', status: 'Reported', note: 'Issue logged via campus mobile terminal. Triage in progress.', is_internal: 0, created_at: '2026-09-04 14:32:00' }
+      ]
+    },
+    {
+      ticket_code: 'CP2484',
+      title: 'Library WiFi Down — 2nd Floor Silent Study Section',
+      description: 'Access Point AP-LIB-04 DNS resolution failing. 60+ students unable to access IEEE scholarly papers and midterm study materials.',
+      type: 'campus_issue',
+      category: 'IT & Labs',
+      department: 'Campus IT Infrastructure & NOC',
+      location: 'Central Library, 2nd Floor',
+      building: 'Library',
+      map_x: 52,
+      map_y: 28,
+      priority: 'Medium',
+      status: 'Under Investigation',
+      is_anonymous: 0,
+      reporter_name: 'Tanvir Ahmed (CR)',
+      reporter_id: 'STU-2041',
+      assignee_name: 'Engr. M. Rafiq (NOC Lead)',
+      sla_hours: 36,
+      upvotes: 42,
+      official_verdict: null,
+      evidence_url: null,
+      created_at: '2026-09-04 14:23:00',
+      updated_at: '2026-09-04 14:25:00',
+      updates: [
+        { author_name: 'Student Helpdesk', author_role: 'Student', status: 'Reported', note: 'Multiple student complaints logged regarding Wi-Fi SSID connectivity.', is_internal: 0, created_at: '2026-09-04 14:23:00' },
+        { author_name: 'NOC Lead', author_role: 'Admin', status: 'Under Investigation', note: 'PoE Switch cycle in progress. Field technician dispatched.', is_internal: 0, created_at: '2026-09-04 14:25:00' }
+      ]
+    },
+    {
+      ticket_code: 'CP2483',
+      title: 'Parking Ticket Dispute & Shuttle Access Fee',
+      description: 'Automated barrier system erroneously billed monthly pass holders for student parking. Accounts verified and automated refunds queued.',
+      type: 'student_objection',
+      category: 'Transport',
+      department: 'Transport Department',
+      location: 'Transport Gate B',
+      building: 'Admin',
+      map_x: 74,
+      map_y: 65,
+      priority: 'Low',
+      status: 'Resolved',
+      is_anonymous: 0,
+      reporter_name: 'Student Union Rep',
+      reporter_id: 'STU-1099',
+      assignee_name: 'Mr. Kabir (Transport Officer)',
+      sla_hours: 48,
+      upvotes: 18,
+      official_verdict: 'All 14 erroneous fines revoked. Automated RFID gate firmware updated.',
+      evidence_url: null,
+      created_at: '2026-09-04 13:59:00',
+      updated_at: '2026-09-04 14:30:00',
+      updates: [
+        { author_name: 'Student Desk', author_role: 'Student', status: 'Reported', note: 'Dispute submitted with gate CCTV reference.', is_internal: 0, created_at: '2026-09-04 13:59:00' },
+        { author_name: 'Transport Directorate', author_role: 'Staff', status: 'Resolved', note: 'Refund transaction batch processed.', is_internal: 0, created_at: '2026-09-04 14:30:00' }
+      ]
+    },
+    {
+      ticket_code: 'CP2482',
+      title: 'Student Objection: Attendance Fine for CSE311 (Portal Crash)',
+      description: 'During the mid-term submission deadline on Sunday 11:50 PM, the university portal threw 502 Bad Gateway. 45 students were penalized unfairly. Immediate revocation requested.',
       type: 'student_objection',
       category: 'Academic',
       department: 'Department of CSE & Exam Committee',
-      location: 'Academic Building Room 402',
-      map_x: 32,
-      map_y: 28,
+      location: 'Academic Admin Building Room 402',
+      building: 'Admin',
+      map_x: 62,
+      map_y: 72,
       priority: 'Critical',
       status: 'Under Investigation',
       is_anonymous: 0,
-      reporter_name: 'Shreya Golder (CR)',
-      reporter_id: '251-15-467',
+      reporter_name: 'Tanvir Ahmed (CR)',
+      reporter_id: 'STU-2041',
       assignee_name: 'Dr. M. Rahman (Head of CSE)',
       sla_hours: 24,
       upvotes: 68,
       official_verdict: null,
       evidence_url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop',
-      created_at: '2026-09-02 10:15:00',
-      updated_at: '2026-09-03 11:30:00',
+      created_at: '2026-09-04 10:15:00',
+      updated_at: '2026-09-04 11:30:00',
       updates: [
-        { author_name: 'System', author_role: 'System', status: 'Reported', note: 'Formal student objection received and verified by Class Representative.', is_internal: 0, created_at: '2026-09-02 10:15:00' },
-        { author_name: 'Dean Office', author_role: 'Admin', status: 'Triaged', note: 'Objection forwarded with high priority to Department Exam Controller.', is_internal: 0, created_at: '2026-09-02 14:00:00' },
-        { author_name: 'IT Ops Team', author_role: 'Staff', status: 'Under Investigation', note: 'Server logs confirm a 23-minute nginx timeout between 11:42 PM - 12:05 AM. Audit in progress.', is_internal: 0, created_at: '2026-09-03 11:30:00' }
+        { author_name: 'System', author_role: 'System', status: 'Reported', note: 'Formal student objection received and verified by Class Representative.', is_internal: 0, created_at: '2026-09-04 10:15:00' },
+        { author_name: 'Dean Office', author_role: 'Admin', status: 'Triaged', note: 'Objection forwarded with high priority to Department Exam Controller.', is_internal: 0, created_at: '2026-09-04 11:00:00' },
+        { author_name: 'IT Ops Team', author_role: 'Staff', status: 'Under Investigation', note: 'Server logs confirm a 23-minute nginx timeout. Investigation report in review.', is_internal: 0, created_at: '2026-09-04 11:30:00' }
       ]
     },
     {
-      title: 'Campus Petition: Introduce 7:30 AM & 8:15 AM Shuttle Route from Mirpur 10',
-      description: 'Current 8:00 AM bus gets overcrowded and students from Mirpur, Kazipara and Agargaon cannot board, resulting in missed first-period labs. We request two staggered morning shuttles.',
+      ticket_code: 'CP2481',
+      title: 'Campus Petition: Introduce 7:30 AM & 8:15 AM Shuttle Route from Mirpur',
+      description: 'Overcrowded morning buses result in missed 8:30 AM classes for 150+ students. We request two staggered morning shuttles.',
       type: 'petition',
       category: 'Transport',
       department: 'Transport Department',
-      location: 'Transport Terminal / Gate B',
-      map_x: 68,
-      map_y: 64,
+      location: 'Student Union Building',
+      building: 'Union',
+      map_x: 48,
+      map_y: 52,
       priority: 'High',
       status: 'Hearing Scheduled',
       is_anonymous: 0,
       reporter_name: 'Student Welfare Committee',
-      reporter_id: '243-15-112',
-      assignee_name: 'Mr. Kabir (Transport Officer)',
+      reporter_id: 'STU-5510',
+      assignee_name: 'Transport Officer',
       sla_hours: 48,
       upvotes: 142,
-      official_verdict: 'Transport board meeting scheduled for Sunday 11:00 AM to allocate 2 additional AC buses.',
+      official_verdict: 'Transport board meeting scheduled for Sunday 11:00 AM to allocate 2 additional buses.',
       evidence_url: null,
-      created_at: '2026-08-30 09:00:00',
-      updated_at: '2026-09-03 14:20:00',
+      created_at: '2026-09-03 09:00:00',
+      updated_at: '2026-09-04 12:20:00',
       updates: [
-        { author_name: 'System', author_role: 'System', status: 'Reported', note: 'Petition reached threshold (>100 signatures). Escalated to Director.', is_internal: 0, created_at: '2026-09-01 16:20:00' },
-        { author_name: 'Transport Directorate', author_role: 'Staff', status: 'Hearing Scheduled', note: 'Delegation meeting with student representatives arranged.', is_internal: 0, created_at: '2026-09-03 14:20:00' }
+        { author_name: 'System', author_role: 'System', status: 'Reported', note: 'Petition reached threshold (>100 signatures). Escalated to Director.', is_internal: 0, created_at: '2026-09-03 09:00:00' },
+        { author_name: 'Transport Directorate', author_role: 'Staff', status: 'Hearing Scheduled', note: 'Delegation meeting arranged with student representatives.', is_internal: 0, created_at: '2026-09-04 12:20:00' }
       ]
     },
     {
-      title: 'Formal Objection: High Prices and Lack of Fresh Food in 4th Floor Cafeteria',
-      description: 'Cafeteria vendors have increased meal prices by 35% without student committee consent, and recent food inspections showed improper refrigeration of dairy products.',
+      ticket_code: 'CP2480',
+      title: 'Cafeteria Price Hike & Quality Review Request',
+      description: 'Meal prices increased by 35% without student consultation. Student welfare committee demands price capping and inspection.',
       type: 'student_objection',
       category: 'Cafeteria',
       department: 'Campus Facilities & Food Safety Board',
-      location: 'Main Cafeteria (Level 4)',
-      map_x: 45,
-      map_y: 72,
+      location: 'Central Cafeteria (Union Building)',
+      building: 'Union',
+      map_x: 46,
+      map_y: 54,
       priority: 'High',
       status: 'Triaged',
       is_anonymous: 1,
       reporter_name: 'Anonymous Student',
       reporter_id: 'ANON-781',
-      assignee_name: 'Hygiene & Commercial Inspector',
+      assignee_name: 'Food Inspector',
       sla_hours: 36,
       upvotes: 94,
       official_verdict: null,
       evidence_url: null,
-      created_at: '2026-09-03 08:30:00',
-      updated_at: '2026-09-03 12:00:00',
+      created_at: '2026-09-04 08:30:00',
+      updated_at: '2026-09-04 12:00:00',
       updates: [
-        { author_name: 'Student Desk', author_role: 'Student', status: 'Reported', note: 'Anonymous complaint filed with photographic evidence.', is_internal: 0, created_at: '2026-09-03 08:30:00' },
-        { author_name: 'Facility Supervisor', author_role: 'Staff', status: 'Triaged', note: 'Vendor issued show-cause notice regarding price capping.', is_internal: 0, created_at: '2026-09-03 12:00:00' }
-      ]
-    },
-    {
-      title: 'Wi-Fi Outage — Central Library 2nd & 3rd Floor Quiet Study Zones',
-      description: 'SSID Campus-Student connects but DNS resolution fails. Students working on IEEE research papers unable to access scholarly repositories.',
-      type: 'campus_issue',
-      category: 'IT & Labs',
-      department: 'Campus IT Infrastructure',
-      location: 'Central Library',
-      map_x: 58,
-      map_y: 22,
-      priority: 'High',
-      status: 'Under Investigation',
-      is_anonymous: 0,
-      reporter_name: 'Tanvir Hossain',
-      reporter_id: '241-20-890',
-      assignee_name: 'Network Operations Center (NOC)',
-      sla_hours: 12,
-      upvotes: 29,
-      official_verdict: null,
-      evidence_url: null,
-      created_at: '2026-09-03 13:10:00',
-      updated_at: '2026-09-03 14:00:00',
-      updates: [
-        { author_name: 'NOC Admin', author_role: 'Staff', status: 'Under Investigation', note: 'Cisco Core Switch PoE overload detected on rack 3B. Technicians dispatched.', is_internal: 0, created_at: '2026-09-03 14:00:00' }
-      ]
-    },
-    {
-      title: 'Overhead Projector Lamp Blown & HDMI Port Broken — Room AB-501',
-      description: 'Projector blinks yellow lamp failure indicator. Classes had to be shifted or conducted without visual aids.',
-      type: 'campus_issue',
-      category: 'Facilities',
-      department: 'AV & Classroom Support',
-      location: 'Academic Building 5th Floor',
-      map_x: 24,
-      map_y: 42,
-      priority: 'Medium',
-      status: 'Reported',
-      is_anonymous: 0,
-      reporter_name: 'Faculty Assistant',
-      reporter_id: 'FAC-209',
-      assignee_name: 'Classroom Support',
-      sla_hours: 24,
-      upvotes: 11,
-      official_verdict: null,
-      evidence_url: null,
-      created_at: '2026-09-03 15:40:00',
-      updated_at: '2026-09-03 15:40:00',
-      updates: [
-        { author_name: 'System', author_role: 'System', status: 'Reported', note: 'Automated ticket dispatched to engineering support.', is_internal: 0, created_at: '2026-09-03 15:40:00' }
-      ]
-    },
-    {
-      title: 'Water Cooler Dispenser Leakage causing slippery hazard',
-      description: 'Fresh drinking water cooler near Room 204 was leaking. Fixed with new valve seal and floor dried.',
-      type: 'campus_issue',
-      category: 'Facilities',
-      department: 'Sanitation & Maintenance',
-      location: 'Engineering Building L-2',
-      map_x: 76,
-      map_y: 38,
-      priority: 'Low',
-      status: 'Resolved',
-      is_anonymous: 0,
-      reporter_name: 'Campus Guard',
-      reporter_id: 'SEC-019',
-      assignee_name: 'Plumbing Team',
-      sla_hours: 48,
-      upvotes: 5,
-      official_verdict: 'Faulty intake valve replaced and inspected by estate supervisor.',
-      evidence_url: null,
-      created_at: '2026-09-01 11:00:00',
-      updated_at: '2026-09-02 16:30:00',
-      updates: [
-        { author_name: 'Plumbing Lead', author_role: 'Staff', status: 'Resolved', note: 'Valve replaced. Work verified and signed off.', is_internal: 0, created_at: '2026-09-02 16:30:00' }
+        { author_name: 'Student Desk', author_role: 'Student', status: 'Reported', note: 'Anonymous complaint filed with photographic evidence.', is_internal: 0, created_at: '2026-09-04 08:30:00' }
       ]
     }
   ];
@@ -334,25 +355,25 @@ function seedIssues() {
       }
 
       if (item.type === 'student_objection' && item.upvotes > 50) {
-        db.prepare('INSERT OR IGNORE INTO objection_votes (issue_id, user_id) VALUES (?, ?)').run(issueId, '251-15-467');
+        db.prepare('INSERT OR IGNORE INTO objection_votes (issue_id, user_id) VALUES (?, ?)').run(issueId, 'STU-2041');
       }
     }
 
     insertNotification.run({
       issue_id: 1,
-      title: 'Critical Objection Update',
-      message: 'IT Ops Team confirmed server log downtime for CSE311 attendance objection.',
+      title: 'High Priority Alert',
+      message: '#CP2485 - Dorm A Facility Issue requires immediate maintenance dispatch.',
       type: 'urgent',
       is_read: 0,
-      created_at: '2026-09-03 11:30:00'
+      created_at: '2026-09-04 14:32:00'
     });
     insertNotification.run({
       issue_id: 2,
-      title: 'Petition Threshold Reached',
-      message: 'Mirpur shuttle bus petition reached 140+ signatures. Hearing scheduled.',
-      type: 'success',
+      title: 'NOC Dispatch',
+      message: '#CP2484 - Library WiFi Down under investigation by field team.',
+      type: 'info',
       is_read: 0,
-      created_at: '2026-09-03 14:20:00'
+      created_at: '2026-09-04 14:25:00'
     });
   });
 

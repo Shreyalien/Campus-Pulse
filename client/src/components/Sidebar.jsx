@@ -1,17 +1,17 @@
 import React from 'react';
 import {
   LayoutDashboard,
-  AlertOctagon,
   MapPin,
+  MessageSquare,
+  BarChart2,
   FileText,
-  ShieldCheck,
+  Settings,
+  Activity,
   PlusCircle,
   AlertTriangle,
-  Radio,
   UserCheck,
   LogOut,
-  Sparkles,
-  Bookmark
+  Sparkles
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -21,119 +21,103 @@ export default function Sidebar({
   onOpenAuthModal,
   onLogout,
   objectionCount = 0,
-  myObjectionCount = 0,
   openObjectionModal,
   openReportModal
 }) {
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
-
   const navItems = [
-    { id: 'Overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'Objections', label: 'Student Objections', icon: AlertOctagon, badge: objectionCount },
-    { id: 'MyCases', label: 'My Filed Cases', icon: Bookmark, badge: myObjectionCount > 0 ? myObjectionCount : undefined },
-    { id: 'Live Map', label: 'Live Campus Map', icon: MapPin },
-    { id: 'Reports', label: 'Issue Directory', icon: FileText },
-    { id: 'Admin', label: 'Admin Triage & SLA', icon: ShieldCheck, badge: 'Ops' }
+    { id: 'Overview', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'Live Map', label: 'Live Map', icon: MapPin },
+    { id: 'Objections', label: 'Tickets', icon: MessageSquare, badge: objectionCount > 0 ? objectionCount : undefined },
+    { id: 'Admin', label: 'Analytics', icon: BarChart2 },
+    { id: 'Reports', label: 'Reports', icon: FileText },
+    { id: 'Settings', label: 'Settings', icon: Settings }
   ];
 
+  const handleNavClick = (id) => {
+    if (id === 'Settings') {
+      onOpenAuthModal();
+    } else {
+      setTab(id);
+    }
+  };
+
   return (
-    <aside className="sidebar">
-      <div className="brand-wrap">
-        <div className="brand">
-          <span className="pulse-dot" />
-          CAMPUS<span className="brand-accent">PULSE</span>
+    <aside className="sidebar-mockup-style">
+      {/* Brand Header with ECG icon */}
+      <div className="sidebar-brand-box">
+        <div className="brand-pulse-icon-wrap">
+          <Activity size={24} className="ecg-pulse-logo" />
         </div>
-        <div className="brand-tag">DIU CAMPUS INTELLIGENCE · OPS V2</div>
+        <div className="brand-title-stacked">
+          <span>Campus</span>
+          <span>Pulse</span>
+        </div>
       </div>
 
-      <div className="action-buttons">
-        <button className="btn-objection-primary" onClick={openObjectionModal}>
-          <AlertTriangle size={15} />
-          <span>Raise Objection</span>
-        </button>
-        <button className="btn-quick-report" onClick={openReportModal}>
-          <PlusCircle size={14} />
-          <span>Quick Issue Report</span>
-        </button>
-      </div>
-
-      <nav className="nav-menu">
-        <div className="nav-group-title">COMMAND NAVIGATION</div>
+      {/* Navigation Menu */}
+      <nav className="sidebar-nav-list">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentTab === item.id;
+          const isActive = (item.id === currentTab) || (item.id === 'Overview' && currentTab === 'Dashboard');
           return (
             <button
               key={item.id}
-              className={`nav-link ${isActive ? 'active' : ''}`}
-              onClick={() => setTab(item.id)}
+              className={`mockup-nav-item ${isActive ? 'active-cyan-pill' : ''}`}
+              onClick={() => handleNavClick(item.id)}
             >
-              <Icon size={16} className="nav-icon" />
-              <span className="nav-text">{item.label}</span>
-              {item.badge !== undefined && item.badge > 0 && (
-                <span className={`nav-badge ${item.badge === 'Ops' ? 'badge-ops' : ''}`}>
-                  {item.badge}
-                </span>
+              <Icon size={17} className="nav-item-icon" />
+              <span className="nav-item-label">{item.label}</span>
+              {item.badge !== undefined && (
+                <span className="nav-item-badge">{item.badge}</span>
               )}
             </button>
           );
         })}
       </nav>
 
-      <div className="system-card">
-        <div className="system-header">
-          <Radio size={12} className="pulse-signal text-lime" />
-          <span>LIVE TELEMETRY ACTIVE</span>
-        </div>
-        <p className="system-desc">DIU Ashulia gateway socket streaming in real-time</p>
-        <div className="system-status">
-          <span className="status-ping" />
-          <span>NOC Core Active · 99.4% SLA</span>
-        </div>
+      {/* Action shortcuts */}
+      <div className="sidebar-actions-wrap">
+        <button className="btn-raise-objection-mockup" onClick={openObjectionModal}>
+          <AlertTriangle size={14} />
+          <span>Raise Objection</span>
+        </button>
+        <button className="btn-quick-report-mockup" onClick={openReportModal}>
+          <PlusCircle size={14} />
+          <span>Quick Report</span>
+        </button>
       </div>
 
-      {/* User Profile & Auth Section */}
-      <div className="user-profile-card">
+      {/* User Session Profile & Switcher */}
+      <div className="sidebar-user-footer">
         {currentUser ? (
-          <>
-            <div className="user-card-main">
-              <div className="avatar-circle">
-                {currentUser.avatar || currentUser.name?.substring(0, 2).toUpperCase() || 'ST'}
-              </div>
-              <div className="user-info">
-                <div className="user-name">{currentUser.name}</div>
-                <div className="user-role-label">
-                  {currentUser.role === 'admin'
-                    ? 'Chief Operations Lead'
-                    : `${currentUser.department || 'CSE'} (${currentUser.student_id || 'Student'})`}
-                </div>
-              </div>
+          <div className="sidebar-user-card">
+            <div className="avatar-chip">
+              {currentUser.avatar || currentUser.name?.substring(0, 2).toUpperCase() || 'ST'}
             </div>
-
-            <div className="user-card-actions">
-              <button
-                className="role-switch-btn"
-                title="Switch between Student and Admin demo accounts"
-                onClick={onOpenAuthModal}
-              >
-                <Sparkles size={11} />
-                <span>Switch / Login</span>
-              </button>
-              <button
-                className="logout-icon-btn"
-                title="Sign Out"
-                onClick={onLogout}
-              >
-                <LogOut size={13} />
-              </button>
+            <div className="user-details-stacked">
+              <span className="user-name-line">{currentUser.name}</span>
+              <span className="user-role-line">
+                {currentUser.role === 'admin' ? 'Chief Ops' : currentUser.student_id || 'Student'}
+              </span>
             </div>
-          </>
+            <button
+              className="user-logout-btn"
+              title="Sign Out"
+              onClick={onLogout}
+            >
+              <LogOut size={13} />
+            </button>
+          </div>
         ) : (
-          <button className="btn-primary full" onClick={onOpenAuthModal}>
+          <button className="btn-signin-sidebar" onClick={onOpenAuthModal}>
             <UserCheck size={14} />
-            <span>Sign In to Portal</span>
+            <span>Sign In / Demo</span>
           </button>
         )}
+
+        <div className="sidebar-footer-credit">
+          Developed by <strong>Shreya Golder</strong>
+        </div>
       </div>
     </aside>
   );

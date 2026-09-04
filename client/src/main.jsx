@@ -95,7 +95,7 @@ function App() {
           student_id: demos[0].student_id,
           role: demos[0].role,
           department: demos[0].department,
-          avatar: 'SG'
+          avatar: 'TA'
         });
       }
     } catch (err) {
@@ -178,7 +178,7 @@ function App() {
 
   const handleVote = async (issueId) => {
     try {
-      const userId = currentUser?.student_id || '251-15-467';
+      const userId = currentUser?.student_id || 'STU-2041';
       const res = await voteIssue(issueId, userId);
       setIssues((prev) => prev.map(i => i.id === issueId ? { ...i, upvotes: res.upvotes, has_voted: res.has_voted } : i));
       if (selectedIssue && selectedIssue.id === issueId) {
@@ -195,7 +195,7 @@ function App() {
       const created = await createIssue({
         ...data,
         reporter_name: currentUser ? currentUser.name : 'Student Reporter',
-        reporter_id: currentUser ? currentUser.student_id : '251-15-467'
+        reporter_id: currentUser ? currentUser.student_id : 'STU-2041'
       });
       showToast('✓ Formal objection lodged and submitted for administrative triage');
       loadAllData();
@@ -209,7 +209,7 @@ function App() {
       await createIssue({
         ...data,
         reporter_name: currentUser ? currentUser.name : 'Student Reporter',
-        reporter_id: currentUser ? currentUser.student_id : '251-15-467'
+        reporter_id: currentUser ? currentUser.student_id : 'STU-2041'
       });
       showToast('✓ Incident report submitted');
       loadAllData();

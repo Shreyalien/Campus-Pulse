@@ -1,261 +1,318 @@
-﻿import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
 import {
-  Activity, CheckCircle2, Clock, AlertOctagon, TrendingUp, Radio, ArrowUpRight
+  Activity,
+  CheckCircle2,
+  Clock,
+  Star,
+  MoreVertical,
+  Radio,
+  ChevronDown,
+  AlertTriangle,
+  Flame,
+  ThumbsUp
 } from 'lucide-react';
+import IsometricCampusMap from '../components/IsometricCampusMap';
 
 export default function Overview({
   summary = {},
-  trends = [],
-  categories = [],
   issues = [],
   onSelectIssue,
   onOpenObjectionModal,
   onNavigateTab
 }) {
-  const statCards = [
-    {
-      label: 'ACTIVE ISSUES',
-      value: summary.active_issues || '0',
-      meta: 'Realtime on Campus',
-      icon: Activity,
-      color: 'text-lime'
-    },
-    {
-      label: 'STUDENT OBJECTIONS',
-      value: summary.student_objections || '0',
-      meta: `${summary.active_petitions || 0} active petitions`,
-      icon: AlertOctagon,
-      color: 'text-amber'
-    },
-    {
-      label: 'STUDENT ENDORSEMENTS',
-      value: summary.total_student_endorsements || '0',
-      meta: 'Peer signatures logged',
-      icon: TrendingUp,
-      color: 'text-emerald'
-    },
-    {
-      label: 'AVG RESPONSE SLA',
-      value: summary.avg_response_time || '18m',
-      meta: '99.4% resolution compliance',
-      icon: Clock,
-      color: 'text-cyan'
-    }
+  const [timeFilter, setTimeFilter] = useState('Hourly');
+
+  // Dual line volume graph matching the mockup
+  const volumeData = [
+    { time: '10AM', cyan: 25, green: 40 },
+    { time: '', cyan: 38, green: 22 },
+    { time: '08AM', cyan: 48, green: 75 },
+    { time: '', cyan: 78, green: 65 },
+    { time: '12PM', cyan: 88, green: 52 },
+    { time: '', cyan: 65, green: 80 },
+    { time: '15PM', cyan: 92, green: 68 }
   ];
 
-  const activeIssuesForMap = issues.filter(i => i.status !== 'Resolved');
+  // Donut chart data matching mockup (In Progress 45%, Resolved 55%)
+  const statusDonutData = [
+    { name: 'In Progress', value: 45, color: '#00f2fe' },
+    { name: 'Resolved', value: 55, color: '#00e676' }
+  ];
+
+  // Recent incident feed items
+  const feedIssues = issues.slice(0, 5);
+
+  const getPriorityTagClass = (p) => {
+    switch (p?.toLowerCase()) {
+      case 'critical':
+      case 'high':
+        return 'tag-priority-high';
+      case 'medium':
+        return 'tag-priority-medium';
+      default:
+        return 'tag-priority-low';
+    }
+  };
+
+  const getStatusPrefix = (s) => {
+    if (s === 'Resolved') return { text: '[Resolved]', color: 'text-resolved' };
+    if (s === 'Under Investigation' || s === 'Triaged') return { text: '[In Progress]', color: 'text-progress' };
+    return { text: '[New]', color: 'text-new' };
+  };
 
   return (
-    <div className="page-container">
-      {/* Top Banner Alert for Student Objections */}
-      {summary.student_objections > 0 && (
-        <div className="objection-alert-strip">
-          <div className="strip-left">
-            <span className="strip-badge">PRIORITY REDRESSAL</span>
-            <p>
-              <strong>{summary.student_objections} Formal Student Objections & Petitions</strong> are currently open for administrative hearing.
-            </p>
+    <div className="overview-mockup-layout">
+      {/* ---------------- TOP 4 STAT CARDS ---------------- */}
+      <div className="stat-cards-row">
+        {/* Card 1: Active Incidents (Highlighted with glow) */}
+        <div className="stat-kpi-card active-glow-card">
+          <div className="kpi-top">
+            <span className="kpi-label">Active Incidents</span>
+            <MoreVertical size={14} className="kpi-menu-icon" />
           </div>
-          <button className="btn-strip-action" onClick={() => onNavigateTab('Objections')}>
-            View Objections Desk <ArrowUpRight size={14} />
-          </button>
+          <div className="kpi-value-row">
+            <Activity size={22} className="ecg-pulse-icon" />
+            <span className="kpi-number">{summary.active_issues || 14}</span>
+          </div>
         </div>
-      )}
 
-      {/* KPI Stats Grid */}
-      <div className="stats-row">
-        {statCards.map((st, i) => {
-          const Icon = st.icon;
-          return (
-            <motion.div
-              key={st.label}
-              className="stat-card"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06 }}
-            >
-              <div className="stat-card-header">
-                <span className="stat-card-label">{st.label}</span>
-                <Icon size={16} className={st.color} />
-              </div>
-              <div className="stat-card-value">{st.value}</div>
-              <div className="stat-card-meta">{st.meta}</div>
-            </motion.div>
-          );
-        })}
+        {/* Card 2: Resolved Today */}
+        <div className="stat-kpi-card">
+          <div className="kpi-top">
+            <span className="kpi-label">Resolved Today</span>
+          </div>
+          <div className="kpi-value-row">
+            <CheckCircle2 size={22} className="kpi-check-icon" />
+            <span className="kpi-number">{summary.resolved_issues || 31}</span>
+          </div>
+        </div>
+
+        {/* Card 3: Average Resolution Time */}
+        <div className="stat-kpi-card">
+          <div className="kpi-top">
+            <span className="kpi-label">Average Resolution Time</span>
+          </div>
+          <div className="kpi-value-row">
+            <span className="kpi-number text-white">{summary.avg_response_time || '48m'}</span>
+          </div>
+        </div>
+
+        {/* Card 4: Student Feedback */}
+        <div className="stat-kpi-card">
+          <div className="kpi-top">
+            <span className="kpi-label">Student Feedback</span>
+          </div>
+          <div className="kpi-value-row">
+            <span className="kpi-number text-white">4.6/5</span>
+          </div>
+        </div>
       </div>
 
-      {/* Main Grid: Live Map & Live Feed */}
+      {/* ---------------- MAIN TWO-COLUMN DASHBOARD ---------------- */}
       <div className="overview-main-grid">
-        <section className="dashboard-panel map-panel">
-          <div className="panel-header">
-            <div>
-              <span className="panel-eyebrow">DIU ASHULIA PERMANENT CAMPUS</span>
-              <h2 className="panel-title">Live Incident & Objection Activity</h2>
-            </div>
-            <div className="live-telemetry-tag">
-              <span className="telemetry-ping" />
-              <span>LIVE TELEMETRY</span>
-            </div>
+        {/* LEFT COLUMN: 3D Campus Map + Incident Triage Feed */}
+        <div className="overview-left-col">
+          {/* Isometric 3D Map Component */}
+          <div className="dashboard-subcard">
+            <IsometricCampusMap issues={issues} onSelectIssue={onSelectIssue} />
           </div>
 
-          <div className="campus-map-wrapper">
-            {/* Campus SVG Plan Overlay */}
-            <div className="campus-building ab1">
-              <span>ACADEMIC BLDG 1</span>
-              <small>CSE & EEE LABS</small>
-            </div>
-            <div className="campus-building ab2">
-              <span>ACADEMIC BLDG 2</span>
-              <small>LECTURE HALLS</small>
-            </div>
-            <div className="campus-building lib">
-              <span>CENTRAL LIBRARY</span>
-              <small>QUIET STUDY & NOC</small>
-            </div>
-            <div className="campus-building sc">
-              <span>STUDENT CAFETERIA</span>
-              <small>LEVEL 1–4 FOOD COURT</small>
-            </div>
-            <div className="campus-building gate-b">
-              <span>TRANSPORT TERMINAL</span>
-              <small>SHUTTLE BUS GATE B</small>
-            </div>
-            <div className="campus-building hostel">
-              <span>STUDENT RESIDENCE</span>
-              <small>YUNUS KHAN HOSTEL</small>
+          {/* Incident Triage Feed */}
+          <div className="dashboard-subcard incident-feed-card">
+            <div className="feed-header-row">
+              <span className="feed-title">INCIDENT TRIAGE FEED</span>
+              <div className="feed-live-indicator">
+                <span className="feed-live-dot" />
+                <span>Live</span>
+              </div>
             </div>
 
-            <div className="campus-road road-horizontal" />
-            <div className="campus-road road-vertical" />
-            <div className="campus-road road-diagonal" />
+            <div className="feed-list">
+              {feedIssues.map((item) => {
+                const prefix = getStatusPrefix(item.status);
+                const code = item.ticket_code || `CP${2480 + item.id}`;
+                return (
+                  <div
+                    key={item.id}
+                    className="feed-row"
+                    onClick={() => onSelectIssue(item)}
+                  >
+                    <div className="feed-row-left">
+                      <span className={`feed-prefix ${prefix.color}`}>{prefix.text}</span>
+                      <span className="feed-ticket-id">#{code}</span>
+                      <span className="feed-dash">-</span>
+                      <span className="feed-item-title">{item.title}</span>
+                      <span className="feed-dash">-</span>
+                      <span className="feed-time">
+                        {item.created_at ? '2m ago' : 'Just now'}
+                      </span>
+                      <span className="feed-dash">-</span>
+                      <span className={`feed-priority-pill ${getPriorityTagClass(item.priority)}`}>
+                        {item.priority?.toUpperCase()} PRIORITY
+                      </span>
+                      <span className="feed-dash">-</span>
+                      <span className="feed-assignee-text">
+                        {item.status === 'Resolved' ? 'Student Notified' : item.status === 'Under Investigation' ? 'Technician Assigned' : 'Pending'}
+                      </span>
+                    </div>
 
-            {/* Pulsing Markers */}
-            {activeIssuesForMap.map((item, idx) => (
-              <motion.button
-                key={item.id}
-                className={`map-marker marker-${item.priority?.toLowerCase()} ${item.type === 'student_objection' ? 'marker-objection' : ''}`}
-                style={{ left: `${item.map_x || 50}%`, top: `${item.map_y || 50}%` }}
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ duration: 2.2, repeat: Infinity, delay: idx * 0.15 }}
-                onClick={() => onSelectIssue(item)}
-                title={`${item.title} (${item.priority})`}
-              >
-                <span className="marker-core" />
-                <span className="marker-pulse-ring" />
-              </motion.button>
-            ))}
-          </div>
-
-          <div className="map-legend">
-            <span className="legend-item"><span className="legend-dot dot-critical" /> Critical / Formal Objection</span>
-            <span className="legend-item"><span className="legend-dot dot-high" /> High Priority</span>
-            <span className="legend-item"><span className="legend-dot dot-medium" /> Medium</span>
-            <span className="legend-item"><span className="legend-dot dot-low" /> Low</span>
-          </div>
-        </section>
-
-        {/* Live Incident & Grievance Stream */}
-        <section className="dashboard-panel feed-panel">
-          <div className="panel-header">
-            <div>
-              <span className="panel-eyebrow">REALTIME STREAM</span>
-              <h2 className="panel-title">Recent Tickets & Objections</h2>
-            </div>
-            <button className="btn-link-action" onClick={() => onNavigateTab('Reports')}>
-              All Records →
-            </button>
-          </div>
-
-          <div className="feed-list">
-            {issues.slice(0, 6).map((item) => (
-              <motion.div
-                layout
-                key={item.id}
-                className="feed-item"
-                onClick={() => onSelectIssue(item)}
-              >
-                <div className={`feed-icon-box ${item.type === 'student_objection' ? 'icon-objection' : 'icon-issue'}`}>
-                  {item.category ? item.category[0] : 'C'}
-                </div>
-                <div className="feed-content">
-                  <div className="feed-title-line">
-                    <span className="feed-title">{item.title}</span>
+                    <div className="feed-row-right">
+                      <button
+                        className="feed-menu-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectIssue(item);
+                        }}
+                      >
+                        <MoreVertical size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="feed-meta">
-                    <span>{item.location}</span>
-                    <span>·</span>
-                    <span>{item.type === 'student_objection' ? `${item.upvotes || 0} votes` : item.priority}</span>
-                  </div>
-                </div>
-                <div className={`feed-status status-${item.status?.toLowerCase().replace(' ', '-')}`}>
-                  {item.status}
-                </div>
-              </motion.div>
-            ))}
+                );
+              })}
+            </div>
           </div>
-        </section>
+        </div>
+
+        {/* RIGHT COLUMN: Ticket Analytics & Donut Status */}
+        <div className="overview-right-col">
+          <div className="dashboard-subcard analytics-card-wrap">
+            <div className="analytics-header-row">
+              <span className="analytics-title">TICKET ANALYTICS</span>
+              <div className="analytics-header-right">
+                <span className="live-graph-label">Live Graph</span>
+                <div className="hourly-dropdown-btn">
+                  <span>Hourly</span>
+                  <ChevronDown size={12} />
+                </div>
+              </div>
+            </div>
+
+            {/* Subheader: Report Volume */}
+            <div className="chart-section-label">Report Volume</div>
+
+            {/* Dual curved area chart */}
+            <div className="report-volume-chart-box">
+              <ResponsiveContainer width="100%" height={170}>
+                <AreaChart data={volumeData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="volCyan" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#00f2fe" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#00f2fe" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="volGreen" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#00e676" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#00e676" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="time"
+                    stroke="#485c72"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={{ stroke: '#1c2836' }}
+                  />
+                  <YAxis
+                    stroke="#485c72"
+                    fontSize={10}
+                    domain={[0, 100]}
+                    ticks={[0, 20, 40, 60, 80, 100]}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: '#0e1622',
+                      borderColor: '#1e2c3c',
+                      borderRadius: 8,
+                      fontSize: 11
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="green"
+                    stroke="#00e676"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#volGreen)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="cyan"
+                    stroke="#00f2fe"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#volCyan)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Subheader: Ticket Status Donut */}
+            <div className="chart-section-label" style={{ marginTop: 24 }}>Ticket Status</div>
+
+            <div className="donut-chart-container">
+              <div className="donut-center-legend">
+                <div className="donut-legend-item left">
+                  <span className="legend-label">In Progress</span>
+                  <strong className="legend-val text-cyan">45%</strong>
+                </div>
+
+                <div className="donut-render-box">
+                  <ResponsiveContainer width={130} height={130}>
+                    <PieChart>
+                      <Pie
+                        data={statusDonutData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={42}
+                        outerRadius={58}
+                        startAngle={90}
+                        endAngle={-270}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {statusDonutData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="donut-legend-item right">
+                  <span className="legend-label">Resolved</span>
+                  <strong className="legend-val text-lime">55%</strong>
+                </div>
+              </div>
+
+              {/* Carousel dots below */}
+              <div className="carousel-dots-row">
+                <span className="dot active" />
+                <span className="dot" />
+                <span className="dot" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Analytics Charts Row */}
-      <div className="charts-row">
-        <section className="dashboard-panel chart-panel">
-          <div className="panel-header">
-            <div>
-              <span className="panel-eyebrow">7-DAY INCIDENT VELOCITY</span>
-              <h3 className="panel-title">Reports & Objections Over Time</h3>
-            </div>
-          </div>
-          <div className="chart-wrapper">
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={trends}>
-                <defs>
-                  <linearGradient id="colorReports" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#d9ff62" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#d9ff62" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorObjections" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="d" stroke="#526071" fontSize={11} tickLine={false} />
-                <YAxis hide />
-                <Tooltip
-                  contentStyle={{ background: '#0e141c', borderColor: '#263445', borderRadius: 8, fontSize: 12 }}
-                />
-                <Area type="monotone" dataKey="reports" stroke="#d9ff62" strokeWidth={2} fillOpacity={1} fill="url(#colorReports)" name="Total Reports" />
-                <Area type="monotone" dataKey="objections" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorObjections)" name="Student Objections" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        <section className="dashboard-panel chart-panel">
-          <div className="panel-header">
-            <div>
-              <span className="panel-eyebrow">CAMPUS HOTSPOT TAXONOMY</span>
-              <h3 className="panel-title">Grievance & Issue Categories</h3>
-            </div>
-          </div>
-          <div className="chart-wrapper">
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={categories} layout="vertical">
-                <XAxis type="number" hide />
-                <YAxis dataKey="n" type="category" width={90} stroke="#7b8998" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip
-                  contentStyle={{ background: '#0e141c', borderColor: '#263445', borderRadius: 8, fontSize: 12 }}
-                />
-                <Bar dataKey="v" fill="#d9ff62" radius={[0, 6, 6, 0]} name="Reports" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      </div>
+      {/* Footer Credits */}
+      <footer className="mockup-footer">
+        <span>Developed by <strong>Shreya Golder</strong> · University Campus Operations Intelligence</span>
+      </footer>
     </div>
   );
 }

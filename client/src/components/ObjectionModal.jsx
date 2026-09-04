@@ -21,8 +21,8 @@ export default function ObjectionModal({ isOpen, onClose, onSubmit }) {
     location: 'Academic Building 4th Floor',
     priority: 'High',
     is_anonymous: false,
-    reporter_name: 'Shreya Golder (CR)',
-    reporter_id: '251-15-467',
+    reporter_name: 'Tanvir Ahmed (CR)',
+    reporter_id: 'STU-2041',
     description: '',
     evidence_url: ''
   });

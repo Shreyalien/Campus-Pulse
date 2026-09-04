@@ -170,9 +170,9 @@ app.get('/api/auth/demo-users', (req, res) => {
     const demoAccounts = [
       {
         label: 'Student Representative (CR)',
-        name: 'Shreya Golder',
-        email: 'student@diu.edu.bd',
-        student_id: '251-15-467',
+        name: 'Tanvir Ahmed (CR)',
+        email: 'student@campus.edu',
+        student_id: 'STU-2041',
         role: 'student',
         department: 'Department of CSE',
         password: 'password123',
@@ -181,7 +181,7 @@ app.get('/api/auth/demo-users', (req, res) => {
       {
         label: 'Operations & Triage Lead',
         name: 'Engr. M. Rafiq',
-        email: 'admin@diu.edu.bd',
+        email: 'admin@campus.edu',
         student_id: 'OPS-LEAD-01',
         role: 'admin',
         department: 'Campus Operations & Proctorial Board',
@@ -191,7 +191,7 @@ app.get('/api/auth/demo-users', (req, res) => {
       {
         label: 'Faculty Exam Committee',
         name: 'Dr. M. Rahman',
-        email: 'faculty@diu.edu.bd',
+        email: 'faculty@campus.edu',
         student_id: 'FAC-CSE-102',
         role: 'staff',
         department: 'Department of CSE & Exam Committee',
@@ -249,7 +249,7 @@ app.get('/api/issues', (req, res) => {
     const issues = db.prepare(sql).all(...params);
 
     // Fetch user votes for current session
-    const currentUserId = req.user?.student_id || req.headers['x-user-id'] || '251-15-467';
+    const currentUserId = req.user?.student_id || req.headers['x-user-id'] || 'STU-2041';
     const userVotes = new Set(
       db.prepare('SELECT issue_id FROM objection_votes WHERE user_id = ?').all(currentUserId).map(r => r.issue_id)
     );
@@ -273,7 +273,7 @@ app.get('/api/issues/:id', (req, res) => {
     if (!issue) return res.status(404).json({ error: 'Issue not found' });
 
     const updates = db.prepare('SELECT * FROM issue_updates WHERE issue_id = ? ORDER BY id ASC').all(req.params.id);
-    const currentUserId = req.user?.student_id || req.headers['x-user-id'] || '251-15-467';
+    const currentUserId = req.user?.student_id || req.headers['x-user-id'] || 'STU-2041';
     const hasVoted = !!db.prepare('SELECT 1 FROM objection_votes WHERE issue_id = ? AND user_id = ?').get(req.params.id, currentUserId);
 
     res.json({
@@ -296,12 +296,13 @@ app.post('/api/issues', (req, res) => {
       category = 'Academic',
       department = 'General Operations',
       location = '',
+      building = 'Central Campus',
       map_x = Math.floor(Math.random() * 60 + 20),
       map_y = Math.floor(Math.random() * 60 + 20),
       priority = 'Medium',
       is_anonymous = 0,
       reporter_name = req.user?.name || 'Student Reporter',
-      reporter_id = req.user?.student_id || '251-15-467',
+      reporter_id = req.user?.student_id || 'STU-2041',
       evidence_url = null,
       sla_hours = priority === 'Critical' ? 24 : priority === 'High' ? 36 : 48
     } = req.body;
@@ -312,17 +313,18 @@ app.post('/api/issues', (req, res) => {
 
     const displayName = is_anonymous ? 'Anonymous Student' : reporter_name;
     const displayId = is_anonymous ? 'ANON-' + Math.floor(100 + Math.random() * 900) : reporter_id;
+    const ticket_code = 'CP' + Math.floor(2480 + Math.random() * 500);
 
     const stmt = db.prepare(`
       INSERT INTO issues (
-        title, description, type, category, department, location, map_x, map_y,
+        ticket_code, title, description, type, category, department, location, building, map_x, map_y,
         priority, status, is_anonymous, reporter_name, reporter_id, assignee_name,
         sla_hours, upvotes, evidence_url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Reported', ?, ?, ?, 'Unassigned', ?, 1, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Reported', ?, ?, ?, 'Unassigned', ?, 1, ?)
     `);
 
     const result = stmt.run(
-      title, description, type, category, department, location, map_x, map_y,
+      ticket_code, title, description, type, category, department, location, building, map_x, map_y,
       priority, is_anonymous ? 1 : 0, displayName, displayId, sla_hours, evidence_url
     );
 
@@ -380,7 +382,7 @@ app.post('/api/issues', (req, res) => {
 app.post('/api/issues/:id/vote', (req, res) => {
   try {
     const issueId = req.params.id;
-    const userId = req.user?.student_id || req.body.user_id || req.headers['x-user-id'] || '251-15-467';
+    const userId = req.user?.student_id || req.body.user_id || req.headers['x-user-id'] || 'STU-2041';
 
     const existing = db.prepare('SELECT 1 FROM objection_votes WHERE issue_id = ? AND user_id = ?').get(issueId, userId);
 

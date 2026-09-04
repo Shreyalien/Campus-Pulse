@@ -184,7 +184,7 @@ export default function AuthModal({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Shreya Golder"
+                  placeholder="e.g. Tanvir Ahmed"
                   value={regData.name}
                   onChange={(e) => setRegData({ ...regData, name: e.target.value })}
                 />
@@ -199,7 +199,7 @@ export default function AuthModal({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 251-15-467"
+                    placeholder="e.g. STU-2041"
                     value={regData.student_id}
                     onChange={(e) => setRegData({ ...regData, student_id: e.target.value })}
                   />
