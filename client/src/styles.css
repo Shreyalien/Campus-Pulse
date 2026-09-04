@@ -3769,3 +3769,121 @@ input, textarea, select, input[type="text"], input[type="password"], input[type=
   color: #fff;
   border-color: #00e676;
 }
+
+/* ---------------- Expansive 3D Campus Map Styles ---------------- */
+.iso-map-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.campus-badge-tag {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(0, 230, 118, 0.12);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  color: #00e676;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.map-zone-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.zone-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0d151f;
+  border: 1px solid #1a2839;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8fa2b3;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.zone-pill-btn:hover {
+  background: #131e2c;
+  color: #fff;
+  border-color: #2b3e55;
+}
+
+.zone-pill-btn.active {
+  background: rgba(0, 230, 118, 0.15);
+  border-color: #00e676;
+  color: #00e676;
+  font-weight: 800;
+}
+
+.iso-canvas-wrap {
+  position: relative;
+}
+
+/* Floating HUD Card for building hover */
+.building-hover-hud {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(10, 17, 24, 0.95);
+  border: 1px solid rgba(0, 230, 118, 0.4);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  max-width: 380px;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.hud-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-title-row strong {
+  font-size: 12.5px;
+  color: #fff;
+}
+
+.hud-code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #00e676;
+  font-weight: 800;
+}
+
+.hud-sub {
+  font-size: 11px;
+  color: #90a4ae;
+  margin: 3px 0 6px;
+}
+
+.hud-issues-count {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.hud-has-issues {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fbbf24;
+}
+
+.hud-clean {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #00e676;
+}
