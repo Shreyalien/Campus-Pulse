@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   LayoutDashboard,
   AlertOctagon,
@@ -7,21 +7,30 @@ import {
   ShieldCheck,
   PlusCircle,
   AlertTriangle,
-  Radio
+  Radio,
+  UserCheck,
+  LogOut,
+  Sparkles,
+  Bookmark
 } from 'lucide-react';
 
 export default function Sidebar({
   currentTab,
   setTab,
-  userRole,
-  setUserRole,
+  currentUser,
+  onOpenAuthModal,
+  onLogout,
   objectionCount = 0,
+  myObjectionCount = 0,
   openObjectionModal,
   openReportModal
 }) {
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'staff';
+
   const navItems = [
     { id: 'Overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'Objections', label: 'Student Objections', icon: AlertOctagon, badge: objectionCount },
+    { id: 'MyCases', label: 'My Filed Cases', icon: Bookmark, badge: myObjectionCount > 0 ? myObjectionCount : undefined },
     { id: 'Live Map', label: 'Live Campus Map', icon: MapPin },
     { id: 'Reports', label: 'Issue Directory', icon: FileText },
     { id: 'Admin', label: 'Admin Triage & SLA', icon: ShieldCheck, badge: 'Ops' }
@@ -34,7 +43,7 @@ export default function Sidebar({
           <span className="pulse-dot" />
           CAMPUS<span className="brand-accent">PULSE</span>
         </div>
-        <div className="brand-tag">DIU CAMPUS INTELLIGENCE</div>
+        <div className="brand-tag">DIU CAMPUS INTELLIGENCE · OPS V2</div>
       </div>
 
       <div className="action-buttons">
@@ -74,34 +83,57 @@ export default function Sidebar({
       <div className="system-card">
         <div className="system-header">
           <Radio size={12} className="pulse-signal text-lime" />
-          <span>LIVE CAMPUS SIGNAL</span>
+          <span>LIVE TELEMETRY ACTIVE</span>
         </div>
-        <p className="system-desc">All DIU gateway telemetry streaming via Socket.IO</p>
+        <p className="system-desc">DIU Ashulia gateway socket streaming in real-time</p>
         <div className="system-status">
           <span className="status-ping" />
           <span>NOC Core Active · 99.4% SLA</span>
         </div>
       </div>
 
+      {/* User Profile & Auth Section */}
       <div className="user-profile-card">
-        <div className="avatar-circle">
-          {userRole === 'admin' ? 'OP' : 'SG'}
-        </div>
-        <div className="user-info">
-          <div className="user-name">
-            {userRole === 'admin' ? 'Engr. M. Rafiq' : 'Shreya Golder'}
-          </div>
-          <div className="user-role-label">
-            {userRole === 'admin' ? 'Chief Operations Lead' : 'Dept. of CSE (251-15-467)'}
-          </div>
-        </div>
-        <button
-          className="role-switch-btn"
-          title="Switch view between Student and Admin"
-          onClick={() => setUserRole(userRole === 'student' ? 'admin' : 'student')}
-        >
-          {userRole === 'student' ? 'Switch to Admin' : 'Switch to Student'}
-        </button>
+        {currentUser ? (
+          <>
+            <div className="user-card-main">
+              <div className="avatar-circle">
+                {currentUser.avatar || currentUser.name?.substring(0, 2).toUpperCase() || 'ST'}
+              </div>
+              <div className="user-info">
+                <div className="user-name">{currentUser.name}</div>
+                <div className="user-role-label">
+                  {currentUser.role === 'admin'
+                    ? 'Chief Operations Lead'
+                    : `${currentUser.department || 'CSE'} (${currentUser.student_id || 'Student'})`}
+                </div>
+              </div>
+            </div>
+
+            <div className="user-card-actions">
+              <button
+                className="role-switch-btn"
+                title="Switch between Student and Admin demo accounts"
+                onClick={onOpenAuthModal}
+              >
+                <Sparkles size={11} />
+                <span>Switch / Login</span>
+              </button>
+              <button
+                className="logout-icon-btn"
+                title="Sign Out"
+                onClick={onLogout}
+              >
+                <LogOut size={13} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <button className="btn-primary full" onClick={onOpenAuthModal}>
+            <UserCheck size={14} />
+            <span>Sign In to Portal</span>
+          </button>
+        )}
       </div>
     </aside>
   );

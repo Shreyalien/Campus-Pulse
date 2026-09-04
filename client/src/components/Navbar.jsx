@@ -1,15 +1,18 @@
-﻿import React, { useState } from 'react';
-import { Bell, Search, Shield, User, CheckCircle2 } from 'lucide-react';
+import React from 'react';
+import { Bell, Search, Shield, User, Sparkles, GraduationCap } from 'lucide-react';
 
 export default function Navbar({
   currentTab,
-  userRole,
-  notifications = [],
+  currentUser,
+  onOpenAuthModal,
   unreadCount = 0,
   onOpenNotifications,
   searchTerm,
   setSearchTerm
 }) {
+  const isAdmin = currentUser?.role === 'admin';
+  const isStaff = currentUser?.role === 'staff';
+
   return (
     <header className="top-navbar">
       <div className="navbar-left">
@@ -17,7 +20,9 @@ export default function Navbar({
           <span className="live-dot" />
           <span>REALTIME CAMPUS TELEMETRY · DIU ASHULIA PERMANENT CAMPUS</span>
         </div>
-        <h1 className="tab-title">{currentTab}</h1>
+        <h1 className="tab-title">
+          {currentTab === 'MyCases' ? 'My Filed Cases & Appeals' : currentTab}
+        </h1>
       </div>
 
       <div className="navbar-right">
@@ -39,19 +44,36 @@ export default function Navbar({
           {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
         </button>
 
-        <div className={`role-pill ${userRole === 'admin' ? 'role-admin' : 'role-student'}`}>
-          {userRole === 'admin' ? (
-            <>
-              <Shield size={12} />
-              <span>ADMIN OPS MODE</span>
-            </>
-          ) : (
-            <>
-              <User size={12} />
-              <span>STUDENT DESK</span>
-            </>
-          )}
-        </div>
+        {currentUser ? (
+          <div
+            className={`role-pill ${isAdmin ? 'role-admin' : isStaff ? 'role-staff' : 'role-student'} cursor-pointer`}
+            onClick={onOpenAuthModal}
+            title="Click to switch between Student and Admin accounts"
+          >
+            {isAdmin ? (
+              <>
+                <Shield size={12} />
+                <span>ADMIN OPS MODE ({currentUser.name.split(' ')[0]})</span>
+              </>
+            ) : isStaff ? (
+              <>
+                <GraduationCap size={12} />
+                <span>FACULTY BOARD</span>
+              </>
+            ) : (
+              <>
+                <User size={12} />
+                <span>STUDENT DESK ({currentUser.student_id || currentUser.name.split(' ')[0]})</span>
+              </>
+            )}
+            <Sparkles size={11} className="pill-sparkle" />
+          </div>
+        ) : (
+          <button className="btn-signin-nav" onClick={onOpenAuthModal}>
+            <Sparkles size={13} className="text-lime" />
+            <span>Sign In / Demo</span>
+          </button>
+        )}
       </div>
     </header>
   );

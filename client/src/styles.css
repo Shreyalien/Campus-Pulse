@@ -2646,3 +2646,237 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------------- AUTH MODAL & PROFILE STYLES ---------------- */
+.auth-modal-container {
+  max-width: 480px;
+}
+
+.auth-tab-bar {
+  display: flex;
+  background: #0f1622;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 18px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.auth-tab-btn.active {
+  background: #1b2636;
+  color: #fff;
+}
+
+.auth-tab-btn.tab-demo {
+  color: var(--accent-lime);
+}
+
+.auth-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-size: 11px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #111822;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.input-with-icon input {
+  border: none !important;
+  background: none !important;
+  padding: 10px 0 !important;
+  width: 100%;
+}
+
+.auth-switch-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-switch-hint button {
+  color: var(--accent-lime);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.demo-accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.demo-list-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.demo-account-card {
+  background: #101824;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.demo-account-card:hover {
+  border-color: var(--accent-lime);
+  background: #141f2f;
+  transform: translateY(-2px);
+}
+
+.demo-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.role-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.6px;
+}
+
+.role-staff {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.demo-id-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.demo-name-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.demo-name-line strong {
+  font-size: 13px;
+  color: #fff;
+}
+
+.demo-dept {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.demo-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 6px 0 10px;
+}
+
+.demo-click-action {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-lime);
+}
+
+/* User Profile card inside sidebar */
+.user-card-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.logout-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #141d27;
+  border: 1px solid var(--border-subtle);
+  color: #94a3b8;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+}
+
+.logout-icon-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.btn-signin-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(217, 255, 98, 0.1);
+  border: 1px solid rgba(217, 255, 98, 0.3);
+  color: var(--accent-lime);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 14px;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.btn-signin-nav:hover {
+  background: rgba(217, 255, 98, 0.2);
+  transform: translateY(-1px);
+}
+
+.pill-sparkle {
+  margin-left: 2px;
+  opacity: 0.8;
+}
+
+.auth-prompt-panel {
+  text-align: center;
+  padding: 60px 20px;
+}
