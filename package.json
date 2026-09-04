@@ -9,11 +9,13 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "latest",
     "concurrently": "latest",
     "cors": "latest",
     "express": "latest",
     "framer-motion": "latest",
+    "jsonwebtoken": "^9.0.3",
     "leaflet": "latest",
     "lucide-react": "^1.40.0",
     "react": "latest",

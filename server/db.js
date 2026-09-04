@@ -1,5 +1,6 @@
-﻿const Database = require('better-sqlite3');
+const Database = require('better-sqlite3');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 const dbPath = path.join(__dirname, '..', 'campus-pulse.db');
 const db = new Database(dbPath);
@@ -7,6 +8,18 @@ db.pragma('journal_mode = WAL');
 
 function initDb() {
   db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      student_id TEXT,
+      password_hash TEXT NOT NULL,
+      role TEXT DEFAULT 'student', -- 'student', 'staff', 'admin'
+      department TEXT DEFAULT 'Department of CSE',
+      avatar TEXT,
+      created_at TEXT DEFAULT (datetime('now', 'localtime'))
+    );
+
     CREATE TABLE IF NOT EXISTS issues (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -28,6 +41,7 @@ function initDb() {
       sla_hours INTEGER DEFAULT 48,
       upvotes INTEGER DEFAULT 0,
       official_verdict TEXT,
+      evidence_url TEXT,
       created_at TEXT DEFAULT (datetime('now', 'localtime')),
       updated_at TEXT DEFAULT (datetime('now', 'localtime')),
       resolved_at TEXT
@@ -63,22 +77,80 @@ function initDb() {
     );
   `);
 
-  const count = db.prepare('SELECT COUNT(*) as c FROM issues').get().c;
-  if (count === 0) {
-    seedData();
+  // Migration check: add evidence_url to issues if missing
+  try {
+    const cols = db.prepare('PRAGMA table_info(issues)').all().map(c => c.name);
+    if (!cols.includes('evidence_url')) {
+      db.exec('ALTER TABLE issues ADD COLUMN evidence_url TEXT');
+    }
+  } catch (err) {
+    // Column may already exist
+  }
+
+  // Seed default users if empty
+  const userCount = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
+  if (userCount === 0) {
+    seedUsers();
+  }
+
+  // Seed sample issues if empty
+  const issueCount = db.prepare('SELECT COUNT(*) as c FROM issues').get().c;
+  if (issueCount === 0) {
+    seedIssues();
   }
 }
 
-function seedData() {
+function seedUsers() {
+  const insertUser = db.prepare(`
+    INSERT INTO users (name, email, student_id, password_hash, role, department, avatar)
+    VALUES (@name, @email, @student_id, @password_hash, @role, @department, @avatar)
+  `);
+
+  const users = [
+    {
+      name: 'Shreya Golder',
+      email: 'student@diu.edu.bd',
+      student_id: '251-15-467',
+      password_hash: bcrypt.hashSync('password123', 10),
+      role: 'student',
+      department: 'Department of CSE',
+      avatar: 'SG'
+    },
+    {
+      name: 'Engr. M. Rafiq',
+      email: 'admin@diu.edu.bd',
+      student_id: 'OPS-LEAD-01',
+      password_hash: bcrypt.hashSync('admin123', 10),
+      role: 'admin',
+      department: 'Campus Operations & Proctorial Board',
+      avatar: 'MR'
+    },
+    {
+      name: 'Dr. M. Rahman',
+      email: 'faculty@diu.edu.bd',
+      student_id: 'FAC-CSE-102',
+      password_hash: bcrypt.hashSync('faculty123', 10),
+      role: 'staff',
+      department: 'Department of CSE & Exam Committee',
+      avatar: 'DR'
+    }
+  ];
+
+  for (const u of users) {
+    insertUser.run(u);
+  }
+}
+
+function seedIssues() {
   const insertIssue = db.prepare(`
     INSERT INTO issues (
       title, description, type, category, department, location, map_x, map_y,
       priority, status, is_anonymous, reporter_name, reporter_id, assignee_name,
-      sla_hours, upvotes, official_verdict, created_at, updated_at
+      sla_hours, upvotes, official_verdict, evidence_url, created_at, updated_at
     ) VALUES (
       @title, @description, @type, @category, @department, @location, @map_x, @map_y,
       @priority, @status, @is_anonymous, @reporter_name, @reporter_id, @assignee_name,
-      @sla_hours, @upvotes, @official_verdict, @created_at, @updated_at
+      @sla_hours, @upvotes, @official_verdict, @evidence_url, @created_at, @updated_at
     )
   `);
 
@@ -111,6 +183,7 @@ function seedData() {
       sla_hours: 24,
       upvotes: 68,
       official_verdict: null,
+      evidence_url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop',
       created_at: '2026-09-02 10:15:00',
       updated_at: '2026-09-03 11:30:00',
       updates: [
@@ -137,6 +210,7 @@ function seedData() {
       sla_hours: 48,
       upvotes: 142,
       official_verdict: 'Transport board meeting scheduled for Sunday 11:00 AM to allocate 2 additional AC buses.',
+      evidence_url: null,
       created_at: '2026-08-30 09:00:00',
       updated_at: '2026-09-03 14:20:00',
       updates: [
@@ -162,6 +236,7 @@ function seedData() {
       sla_hours: 36,
       upvotes: 94,
       official_verdict: null,
+      evidence_url: null,
       created_at: '2026-09-03 08:30:00',
       updated_at: '2026-09-03 12:00:00',
       updates: [
@@ -187,6 +262,7 @@ function seedData() {
       sla_hours: 12,
       upvotes: 29,
       official_verdict: null,
+      evidence_url: null,
       created_at: '2026-09-03 13:10:00',
       updated_at: '2026-09-03 14:00:00',
       updates: [
@@ -211,6 +287,7 @@ function seedData() {
       sla_hours: 24,
       upvotes: 11,
       official_verdict: null,
+      evidence_url: null,
       created_at: '2026-09-03 15:40:00',
       updated_at: '2026-09-03 15:40:00',
       updates: [
@@ -235,6 +312,7 @@ function seedData() {
       sla_hours: 48,
       upvotes: 5,
       official_verdict: 'Faulty intake valve replaced and inspected by estate supervisor.',
+      evidence_url: null,
       created_at: '2026-09-01 11:00:00',
       updated_at: '2026-09-02 16:30:00',
       updates: [

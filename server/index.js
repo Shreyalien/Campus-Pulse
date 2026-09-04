@@ -1,7 +1,9 @@
-﻿const express = require('express');
+const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const db = require('./db');
 
 const app = express();
@@ -13,8 +15,32 @@ const io = new Server(server, {
   }
 });
 
+const JWT_SECRET = process.env.JWT_SECRET || 'campus-pulse-jwt-super-secret-key-2026';
+
 app.use(cors());
 app.use(express.json());
+
+// Auth Middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      req.user = null;
+    } else {
+      req.user = decoded;
+    }
+    next();
+  });
+}
+
+app.use(authenticateToken);
 
 // Realtime connection handler
 io.on('connection', (socket) => {
@@ -28,19 +54,165 @@ io.on('connection', (socket) => {
 app.get('/api/health', (req, res) => {
   const issueCount = db.prepare('SELECT COUNT(*) as c FROM issues').get().c;
   const objectionCount = db.prepare("SELECT COUNT(*) as c FROM issues WHERE type IN ('student_objection', 'petition')").get().c;
+  const userCount = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
   res.json({
     ok: true,
-    service: 'Campus Pulse Enterprise API',
+    service: 'Campus Pulse Enterprise Intelligence Platform',
     total_records: issueCount,
     objection_records: objectionCount,
+    registered_users: userCount,
     timestamp: new Date().toISOString()
   });
 });
 
+// ----------------------------------------------------
+// AUTHENTICATION ENDPOINTS
+// ----------------------------------------------------
+
+// POST /api/auth/register
+app.post('/api/auth/register', (req, res) => {
+  try {
+    const { name, email, student_id, password, role = 'student', department = 'Department of CSE' } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required.' });
+    }
+
+    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    if (existing) {
+      return res.status(409).json({ error: 'An account with this email already exists.' });
+    }
+
+    const password_hash = bcrypt.hashSync(password, 10);
+    const avatar = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'ST';
+
+    const result = db.prepare(`
+      INSERT INTO users (name, email, student_id, password_hash, role, department, avatar)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(name, email, student_id || 'ID-PENDING', password_hash, role, department, avatar);
+
+    const newUser = db.prepare('SELECT id, name, email, student_id, role, department, avatar, created_at FROM users WHERE id = ?').get(result.lastInsertRowid);
+
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, role: newUser.role, name: newUser.name, student_id: newUser.student_id },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      message: 'Registration successful',
+      token,
+      user: newUser
+    });
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.status(500).json({ error: 'Registration failed.' });
+  }
+});
+
+// POST /api/auth/login
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials. User not found.' });
+    }
+
+    const isValid = bcrypt.compareSync(password, user.password_hash);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid password. Please check your credentials.' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, name: user.name, student_id: user.student_id },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    const { password_hash, ...safeUser } = user;
+
+    res.json({
+      message: 'Login successful',
+      token,
+      user: safeUser
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Login failed.' });
+  }
+});
+
+// GET /api/auth/me
+app.get('/api/auth/me', (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated.' });
+    }
+    const user = db.prepare('SELECT id, name, email, student_id, role, department, avatar, created_at FROM users WHERE id = ?').get(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch current user.' });
+  }
+});
+
+// GET /api/auth/demo-users (For instant presentation / demonstration login)
+app.get('/api/auth/demo-users', (req, res) => {
+  try {
+    const demoAccounts = [
+      {
+        label: 'Student Representative (CR)',
+        name: 'Shreya Golder',
+        email: 'student@diu.edu.bd',
+        student_id: '251-15-467',
+        role: 'student',
+        department: 'Department of CSE',
+        password: 'password123',
+        description: 'Lodge formal academic disputes, sign campus petitions, track SLA countdowns & appeal verdicts.'
+      },
+      {
+        label: 'Operations & Triage Lead',
+        name: 'Engr. M. Rafiq',
+        email: 'admin@diu.edu.bd',
+        student_id: 'OPS-LEAD-01',
+        role: 'admin',
+        department: 'Campus Operations & Proctorial Board',
+        password: 'admin123',
+        description: 'Triage incoming student objections, assign investigating officers, enforce SLA timers & publish verdicts.'
+      },
+      {
+        label: 'Faculty Exam Committee',
+        name: 'Dr. M. Rahman',
+        email: 'faculty@diu.edu.bd',
+        student_id: 'FAC-CSE-102',
+        role: 'staff',
+        department: 'Department of CSE & Exam Committee',
+        password: 'faculty123',
+        description: 'Review course evaluations, lab server crash investigations, and conduct student hearings.'
+      }
+    ];
+    res.json(demoAccounts);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch demo accounts.' });
+  }
+});
+
+// ----------------------------------------------------
+// ISSUES & STUDENT OBJECTIONS ENDPOINTS
+// ----------------------------------------------------
+
 // GET Issues & Objections with rich multi-filter
 app.get('/api/issues', (req, res) => {
   try {
-    const { type, category, status, priority, search, department } = req.query;
+    const { type, category, status, priority, search, department, reporter_id } = req.query;
     let sql = 'SELECT * FROM issues WHERE 1=1';
     const params = [];
 
@@ -64,6 +236,10 @@ app.get('/api/issues', (req, res) => {
       sql += ' AND department LIKE ?';
       params.push(`%${department}%`);
     }
+    if (reporter_id && reporter_id !== 'all') {
+      sql += ' AND reporter_id = ?';
+      params.push(reporter_id);
+    }
     if (search) {
       sql += ' AND (title LIKE ? OR description LIKE ? OR location LIKE ?)';
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
@@ -73,7 +249,7 @@ app.get('/api/issues', (req, res) => {
     const issues = db.prepare(sql).all(...params);
 
     // Fetch user votes for current session
-    const currentUserId = req.headers['x-user-id'] || '251-15-467';
+    const currentUserId = req.user?.student_id || req.headers['x-user-id'] || '251-15-467';
     const userVotes = new Set(
       db.prepare('SELECT issue_id FROM objection_votes WHERE user_id = ?').all(currentUserId).map(r => r.issue_id)
     );
@@ -97,7 +273,7 @@ app.get('/api/issues/:id', (req, res) => {
     if (!issue) return res.status(404).json({ error: 'Issue not found' });
 
     const updates = db.prepare('SELECT * FROM issue_updates WHERE issue_id = ? ORDER BY id ASC').all(req.params.id);
-    const currentUserId = req.headers['x-user-id'] || '251-15-467';
+    const currentUserId = req.user?.student_id || req.headers['x-user-id'] || '251-15-467';
     const hasVoted = !!db.prepare('SELECT 1 FROM objection_votes WHERE issue_id = ? AND user_id = ?').get(req.params.id, currentUserId);
 
     res.json({
@@ -116,7 +292,7 @@ app.post('/api/issues', (req, res) => {
     const {
       title,
       description = '',
-      type = 'campus_issue', // 'campus_issue', 'student_objection', 'petition'
+      type = 'campus_issue',
       category = 'Academic',
       department = 'General Operations',
       location = '',
@@ -124,8 +300,9 @@ app.post('/api/issues', (req, res) => {
       map_y = Math.floor(Math.random() * 60 + 20),
       priority = 'Medium',
       is_anonymous = 0,
-      reporter_name = 'Student',
-      reporter_id = '251-15-467',
+      reporter_name = req.user?.name || 'Student Reporter',
+      reporter_id = req.user?.student_id || '251-15-467',
+      evidence_url = null,
       sla_hours = priority === 'Critical' ? 24 : priority === 'High' ? 36 : 48
     } = req.body;
 
@@ -133,20 +310,20 @@ app.post('/api/issues', (req, res) => {
       return res.status(400).json({ error: 'Title and location are required' });
     }
 
-    const displayName = is_anonymous ? 'Anonymous Student' : (reporter_name || 'Student Reporter');
+    const displayName = is_anonymous ? 'Anonymous Student' : reporter_name;
     const displayId = is_anonymous ? 'ANON-' + Math.floor(100 + Math.random() * 900) : reporter_id;
 
     const stmt = db.prepare(`
       INSERT INTO issues (
         title, description, type, category, department, location, map_x, map_y,
         priority, status, is_anonymous, reporter_name, reporter_id, assignee_name,
-        sla_hours, upvotes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Reported', ?, ?, ?, 'Unassigned', ?, 1)
+        sla_hours, upvotes, evidence_url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Reported', ?, ?, ?, 'Unassigned', ?, 1, ?)
     `);
 
     const result = stmt.run(
       title, description, type, category, department, location, map_x, map_y,
-      priority, is_anonymous ? 1 : 0, displayName, displayId, sla_hours
+      priority, is_anonymous ? 1 : 0, displayName, displayId, sla_hours, evidence_url
     );
 
     const issueId = result.lastInsertRowid;
@@ -158,12 +335,12 @@ app.post('/api/issues', (req, res) => {
     `).run(
       issueId,
       displayName,
-      type === 'student_objection' ? 'Student CR' : 'Reporter',
+      type === 'student_objection' ? 'Student' : 'Reporter',
       type === 'student_objection' ? 'Formal Student Objection logged and submitted for administrative triage.' : 'New campus issue report submitted.'
     );
 
     // Automatic self-vote
-    db.prepare('INSERT OR IGNORE INTO objection_votes (issue_id, user_id) VALUES (?, ?)').run(issueId, reporter_id);
+    db.prepare('INSERT OR IGNORE INTO objection_votes (issue_id, user_id) VALUES (?, ?)').run(issueId, displayId);
 
     // Create system notification
     db.prepare(`
@@ -203,18 +380,16 @@ app.post('/api/issues', (req, res) => {
 app.post('/api/issues/:id/vote', (req, res) => {
   try {
     const issueId = req.params.id;
-    const userId = req.body.user_id || req.headers['x-user-id'] || '251-15-467';
+    const userId = req.user?.student_id || req.body.user_id || req.headers['x-user-id'] || '251-15-467';
 
     const existing = db.prepare('SELECT 1 FROM objection_votes WHERE issue_id = ? AND user_id = ?').get(issueId, userId);
 
     let hasVoted = false;
     if (existing) {
-      // Remove vote
       db.prepare('DELETE FROM objection_votes WHERE issue_id = ? AND user_id = ?').run(issueId, userId);
       db.prepare('UPDATE issues SET upvotes = MAX(0, upvotes - 1) WHERE id = ?').run(issueId);
       hasVoted = false;
     } else {
-      // Add vote
       db.prepare('INSERT INTO objection_votes (issue_id, user_id) VALUES (?, ?)').run(issueId, userId);
       db.prepare('UPDATE issues SET upvotes = upvotes + 1 WHERE id = ?').run(issueId);
       hasVoted = true;
@@ -241,7 +416,7 @@ app.post('/api/issues/:id/vote', (req, res) => {
 app.post('/api/issues/:id/appeal', (req, res) => {
   try {
     const issueId = req.params.id;
-    const { appeal_reason, student_name = 'Student' } = req.body;
+    const { appeal_reason, student_name = req.user?.name || 'Student' } = req.body;
 
     if (!appeal_reason) {
       return res.status(400).json({ error: 'Appeal reason is required' });
@@ -282,7 +457,7 @@ app.post('/api/issues/:id/appeal', (req, res) => {
 app.patch('/api/issues/:id', (req, res) => {
   try {
     const issueId = req.params.id;
-    const { status, assignee_name, priority, official_verdict, department, update_note, author_name = 'Ops Staff' } = req.body;
+    const { status, assignee_name, priority, official_verdict, department, update_note, author_name = req.user?.name || 'Ops Staff' } = req.body;
 
     const current = db.prepare('SELECT * FROM issues WHERE id = ?').get(issueId);
     if (!current) return res.status(404).json({ error: 'Issue not found' });
@@ -394,7 +569,6 @@ app.get('/api/analytics/summary', (req, res) => {
 
 // Analytics 7-day Trend
 app.get('/api/analytics/trends', (req, res) => {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const data = [
     { d: 'Mon', reports: 8, objections: 3 },
     { d: 'Tue', reports: 12, objections: 5 },
