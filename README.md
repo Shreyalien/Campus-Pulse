@@ -9,6 +9,10 @@
 
 > **A mission-critical, real-time campus intelligence and student grievance redressal command center.** Engineered to transform administrative communication, eliminate bureaucratic delays, and guarantee transparent resolution timelines across university operations.
 
+<div align="center">
+  <img src="assets/dashboard_preview.png" alt="Campus Pulse Live Command Center Dashboard Preview" width="100%" />
+</div>
+
 ---
 
 ## 📖 The Problem & The Mission
