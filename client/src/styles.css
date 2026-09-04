@@ -3730,3 +3730,42 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------------- Anti-Copy & Text Selection Protection ---------------- */
+body, .app-shell, div, p, span, h1, h2, h3, h4, h5, h6, a, button, section, aside, header, footer, table, svg {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Allow text editing inside form fields and text areas */
+input, textarea, select, input[type="text"], input[type="password"], input[type="email"] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Campus Preset Toggle Button in Isometric Map */
+.campus-preset-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #111a24;
+  border: 1px solid #1c2b3a;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #90a4ae;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.campus-preset-toggle:hover {
+  background: #172433;
+  color: #fff;
+  border-color: #00e676;
+}

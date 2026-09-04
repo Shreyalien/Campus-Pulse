@@ -1,19 +1,43 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, MapPin, Wifi, AlertTriangle } from 'lucide-react';
+import { Bell, MapPin, Wifi, AlertTriangle, Layers } from 'lucide-react';
 
 export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
   const [hoveredNode, setHoveredNode] = useState(null);
+  const [campusMode, setCampusMode] = useState('diu'); // 'diu' or 'universal'
 
-  // Predefined beacon pins matching the mockup layout and linked to real issues
+  // Building metadata supporting both DIU Ashulia landmarks and Universal names
+  const buildings = {
+    library: {
+      diu: 'Knowledge Tower / Library',
+      univ: 'Central Library',
+      sub: 'Research Repositories & Study Floors'
+    },
+    dorms: {
+      diu: 'Yunus Khan Scholar Garden (Dorms)',
+      univ: 'Residential Dorms',
+      sub: 'Student Hostels & Living Quarters'
+    },
+    union: {
+      diu: 'Student Union & Food Court',
+      univ: 'Campus Union',
+      sub: 'Auditorium & Student Amenities'
+    },
+    admin: {
+      diu: 'Academic & Admin Complex',
+      univ: 'Administration & Exam Wing',
+      sub: 'Deans Office, Labs & Syndicate'
+    }
+  };
+
   const beacons = [
     {
       id: 'dorm-a-1',
       x: 180,
       y: 220,
       label: 'Facility Issue - Dorm A',
-      building: 'Dorms',
-      color: '#00e676', // green/mint
+      building: 'dorms',
+      color: '#00e676',
       icon: Bell,
       issue: issues.find(i => i.building === 'Dorms' || i.category === 'Facilities') || {
         id: 1,
@@ -27,12 +51,12 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
       x: 230,
       y: 260,
       label: 'Facility Issue - Dorm A',
-      building: 'Dorms',
+      building: 'dorms',
       color: '#00e676',
       icon: Bell,
       issue: issues.find(i => i.location?.includes('Dorm')) || {
         id: 1,
-        title: 'Dorm A Facility Issue — Plumbing & Ventilation Check',
+        title: 'Dorm A Facility Issue — Water Heater Sensor Check',
         status: 'Reported',
         priority: 'High'
       }
@@ -42,7 +66,7 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
       x: 340,
       y: 270,
       label: 'Union',
-      building: 'Union',
+      building: 'union',
       color: '#00e676',
       icon: MapPin,
       issue: issues.find(i => i.building === 'Union' || i.type === 'petition') || {
@@ -57,8 +81,8 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
       x: 295,
       y: 165,
       label: 'WiFi Down - Library',
-      building: 'Library',
-      color: '#00f2fe', // cyan
+      building: 'library',
+      color: '#00f2fe',
       icon: Bell,
       issue: issues.find(i => i.building === 'Library' || i.category === 'IT & Labs') || {
         id: 2,
@@ -72,7 +96,7 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
       x: 430,
       y: 275,
       label: 'WiFi Down - Library B',
-      building: 'Library',
+      building: 'library',
       color: '#00f2fe',
       icon: Bell,
       issue: issues.find(i => i.building === 'Library') || {
@@ -87,7 +111,7 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
       x: 395,
       y: 310,
       label: 'Admin',
-      building: 'Admin',
+      building: 'admin',
       color: '#00e676',
       icon: MapPin,
       issue: issues.find(i => i.building === 'Admin') || {
@@ -104,10 +128,22 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
       <div className="iso-map-header">
         <div>
           <span className="iso-map-title">LIVE UNIVERSITY CAMPUS MAP</span>
-          <div className="iso-map-sub">Central University Campus</div>
+          <div className="iso-map-sub">
+            {campusMode === 'diu'
+              ? 'DIU Ashulia Permanent Smart Campus (Universal Blueprint)'
+              : 'Universal Central University Campus'}
+          </div>
         </div>
 
         <div className="iso-badges-row">
+          <button
+            className="campus-preset-toggle"
+            onClick={() => setCampusMode(campusMode === 'diu' ? 'univ' : 'diu')}
+            title="Toggle between DIU Ashulia Campus view and Universal Campus view"
+          >
+            <Layers size={12} className="text-lime" />
+            <span>{campusMode === 'diu' ? 'Preset: DIU Ashulia' : 'Preset: Universal'}</span>
+          </button>
           <span className="badge-pill badge-urgent">
             <span className="pill-dot red" /> 3 Urgent
           </span>
@@ -124,19 +160,16 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            {/* Grid ground gradient */}
             <linearGradient id="groundGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#0c151f" />
               <stop offset="100%" stopColor="#080e14" />
             </linearGradient>
 
-            {/* Lawn gradient */}
             <linearGradient id="lawnGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#0e3328" />
               <stop offset="100%" stopColor="#08231a" />
             </linearGradient>
 
-            {/* Building facades */}
             <linearGradient id="wallTop" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#253549" />
               <stop offset="100%" stopColor="#1c2838" />
@@ -150,7 +183,6 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
               <stop offset="100%" stopColor="#151e2a" />
             </linearGradient>
 
-            {/* Glow filters */}
             <filter id="beaconGlowGreen" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
               <feMerge>
@@ -184,7 +216,7 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
             <line x1="400" y1="92" x2="130" y2="247" />
           </g>
 
-          {/* Central Green Lawn */}
+          {/* Central Green Courtyard */}
           <polygon
             points="310,140 440,215 310,290 180,215"
             fill="url(#lawnGrad)"
@@ -192,55 +224,55 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
             strokeWidth="1.2"
           />
 
-          {/* ---------------- 1. LIBRARY BUILDING (Center-Back) ---------------- */}
+          {/* ---------------- 1. KNOWLEDGE TOWER / CENTRAL LIBRARY (Center-Back) ---------------- */}
           <g className="iso-building" transform="translate(0, -10)">
-            {/* Base shadow */}
             <polygon points="310,135 365,167 310,198 255,167" fill="#060b10" opacity="0.6" />
-            {/* Left face */}
             <polygon points="255,167 310,198 310,145 255,114" fill="url(#wallLeft)" stroke="#223447" strokeWidth="0.8" />
-            {/* Right face */}
             <polygon points="310,198 365,167 365,114 310,145" fill="url(#wallRight)" stroke="#2a3f55" strokeWidth="0.8" />
-            {/* Roof */}
             <polygon points="310,145 365,114 310,83 255,114" fill="url(#wallTop)" stroke="#3b526d" strokeWidth="1" />
-            {/* Library Pillars / Windows */}
             <line x1="272" y1="130" x2="272" y2="155" stroke="#486585" strokeWidth="1.5" />
             <line x1="290" y1="140" x2="290" y2="165" stroke="#486585" strokeWidth="1.5" />
             <line x1="330" y1="140" x2="330" y2="165" stroke="#5b7b9e" strokeWidth="1.5" />
             <line x1="348" y1="130" x2="348" y2="155" stroke="#5b7b9e" strokeWidth="1.5" />
-            <text x="310" y="210" textAnchor="middle" fill="#8ba0b5" fontSize="10" fontWeight="700">Library</text>
+            <text x="310" y="210" textAnchor="middle" fill="#8ba0b5" fontSize="9.5" fontWeight="700">
+              {campusMode === 'diu' ? 'Knowledge Tower' : 'Library'}
+            </text>
           </g>
 
-          {/* ---------------- 2. DORMS COMPLEX (Left) ---------------- */}
+          {/* ---------------- 2. YUNUS KHAN SCHOLAR GARDEN / DORMS (Left) ---------------- */}
           <g className="iso-building">
-            {/* Left Dorm Block */}
             <polygon points="170,225 220,254 220,195 170,166" fill="url(#wallLeft)" stroke="#223447" strokeWidth="0.8" />
             <polygon points="220,254 260,231 260,172 220,195" fill="url(#wallRight)" stroke="#2a3f55" strokeWidth="0.8" />
             <polygon points="220,195 260,172 210,143 170,166" fill="url(#wallTop)" stroke="#3b526d" strokeWidth="1" />
-            {/* Windows grid */}
             <rect x="180" y="178" width="6" height="5" fill="#5eead4" opacity="0.3" transform="skewY(18)" />
             <rect x="195" y="186" width="6" height="5" fill="#5eead4" opacity="0.5" transform="skewY(18)" />
             <rect x="180" y="196" width="6" height="5" fill="#5eead4" opacity="0.4" transform="skewY(18)" />
             <rect x="195" y="204" width="6" height="5" fill="#5eead4" opacity="0.3" transform="skewY(18)" />
-            <text x="215" y="267" textAnchor="middle" fill="#8ba0b5" fontSize="10" fontWeight="700">Dorms</text>
+            <text x="215" y="267" textAnchor="middle" fill="#8ba0b5" fontSize="9.5" fontWeight="700">
+              {campusMode === 'diu' ? 'Scholar Garden' : 'Dorms'}
+            </text>
           </g>
 
-          {/* ---------------- 3. UNION BUILDING (Center) ---------------- */}
+          {/* ---------------- 3. AUDITORIUM & STUDENT UNION (Center) ---------------- */}
           <g className="iso-building" transform="translate(30, 20)">
             <polygon points="280,205 320,228 320,185 280,162" fill="url(#wallLeft)" stroke="#223447" strokeWidth="0.8" />
             <polygon points="320,228 355,208 355,165 320,185" fill="url(#wallRight)" stroke="#2a3f55" strokeWidth="0.8" />
             <polygon points="320,185 355,165 315,142 280,162" fill="url(#wallTop)" stroke="#3b526d" strokeWidth="1" />
-            <text x="317" y="240" textAnchor="middle" fill="#8ba0b5" fontSize="10" fontWeight="700">Union</text>
+            <text x="317" y="240" textAnchor="middle" fill="#8ba0b5" fontSize="9.5" fontWeight="700">
+              {campusMode === 'diu' ? 'Smart Auditorium' : 'Union'}
+            </text>
           </g>
 
-          {/* ---------------- 4. ADMIN BUILDING (Right) ---------------- */}
+          {/* ---------------- 4. ACADEMIC & ADMIN COMPLEX (Right) ---------------- */}
           <g className="iso-building">
             <polygon points="360,265 410,294 410,235 360,206" fill="url(#wallLeft)" stroke="#223447" strokeWidth="0.8" />
             <polygon points="410,294 455,268 455,209 410,235" fill="url(#wallRight)" stroke="#2a3f55" strokeWidth="0.8" />
             <polygon points="410,235 455,209 405,180 360,206" fill="url(#wallTop)" stroke="#3b526d" strokeWidth="1" />
-            {/* Windows */}
             <rect x="375" y="222" width="6" height="5" fill="#00e5ff" opacity="0.3" transform="skewY(18)" />
             <rect x="390" y="230" width="6" height="5" fill="#00e5ff" opacity="0.6" transform="skewY(18)" />
-            <text x="410" y="306" textAnchor="middle" fill="#8ba0b5" fontSize="10" fontWeight="700">Admin</text>
+            <text x="410" y="306" textAnchor="middle" fill="#8ba0b5" fontSize="9.5" fontWeight="700">
+              {campusMode === 'diu' ? 'Academic & Admin' : 'Admin'}
+            </text>
           </g>
 
           {/* ---------------- FLOATING GLOWING BEACONS ---------------- */}
@@ -257,13 +289,9 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
                 onClick={() => onSelectIssue && onSelectIssue(b.issue)}
                 style={{ cursor: 'pointer' }}
               >
-                {/* Shadow dot on ground */}
                 <ellipse cx="0" cy="18" rx="8" ry="4" fill="#000" opacity="0.6" />
-
-                {/* Vertical tether stem */}
                 <line x1="0" y1="0" x2="0" y2="18" stroke={b.color} strokeWidth="1.5" opacity="0.6" />
 
-                {/* Pulsing glow ring */}
                 <circle
                   cx="0"
                   cy="0"
@@ -273,7 +301,6 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
                   filter={isCyan ? 'url(#beaconGlowCyan)' : 'url(#beaconGlowGreen)'}
                 />
 
-                {/* Beacon Sphere */}
                 <circle
                   cx="0"
                   cy="0"
@@ -283,10 +310,8 @@ export default function IsometricCampusMap({ issues = [], onSelectIssue }) {
                   strokeWidth="1.5"
                 />
 
-                {/* Center Icon Indicator */}
                 <circle cx="0" cy="0" r="3.5" fill="#081017" />
 
-                {/* Label pill matching mockup */}
                 <g transform="translate(14, -6)">
                   <rect
                     x="0"

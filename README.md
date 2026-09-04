@@ -5,130 +5,190 @@
 [![Vite](https://img.shields.io/badge/Vite-v8.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Socket.IO](https://img.shields.io/badge/Socket.io-v4.x-010101?style=for-the-badge&logo=socket.io&logoColor=white)](https://socket.io/)
 [![SQLite](https://img.shields.io/badge/SQLite-WAL--Mode-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![JWT](https://img.shields.io/badge/Security-JWT%20%2B%20bcrypt-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 
-A mission-critical, real-time campus intelligence and operations platform designed with a dark command-center aesthetic (`#080b10` graphite background, neon signal `#d9ff62` accents). Engineered specifically to bridge the communication gap between university students and campus operations staff, with a primary focus on **Student Objections, Academic Disputes, and Collective Petitions**.
-
----
-
-## 🌟 Key Pillars & Features
-
-### 1. 📢 Student Objection & Grievance Redressal Board (Primary Focus)
-* **Formal Objections**: Students and Class Representatives can lodge structured academic, exam grading, attendance penalty, and cafeteria complaints directly to relevant university authorities.
-* **Collective Campus Petitions**: Students can launch petitions (e.g., additional shuttle bus routes, lab GPU access) that automatically trigger executive administrative review once the **100-signature threshold** is achieved.
-* **Real-time Peer Endorsements (Upvoting)**: Students can upvote active objections with live Socket.IO counter updates to signal priority to administrative deans.
-* **Anonymous Protection Protocol**: One-click toggle allowing whistleblowers and students to file sensitive grievances safely without public identity exposure.
-* **Dispute Appeals**: If a student is dissatisfied with an administrative verdict, they can lodge an executive appeal to the University Syndicate directly from the investigation drawer.
-
-### 2. 🗺️ Geospatial Campus Telemetry & Live Map
-* Interactive campus blueprint featuring university buildings (Academic Building 1 & 2, Central Library, Food Court, Gate B Bus Terminal, Residential Halls).
-* **Pulsing signal markers** animated by severity (`Critical`, `High`, `Medium`, `Low`) and categorized by type.
-* Hover inspection preview cards and instant drawer slide-out.
-
-### 3. ⏱️ Operations Command, Triage & SLA Enforcement
-* **Operations Triage Queue**: Unhandled tickets and objections prioritized by urgency.
-* **SLA Countdown Tracking**: Enforces guaranteed turnaround times (24h for Critical, 36h for High, 48h for Medium).
-* **Binding Administrative Verdicts**: Officers and faculty leads can record official findings and attach public resolution statements.
-* **Audit Trail**: Step-by-step chronological timeline of every action taken by the investigation committee.
-
-### 4. ⚡ Real-Time Socket.IO Synchronisation
-* Instant push events across all connected clients without page reloads:
-  - `issue:new` — New reports and objections broadcast immediately.
-  - `objection:voted` — Real-time upvote updates.
-  - `issue:updated` — Status transitions and published verdicts.
-  - `notification:new` — System-wide urgent broadcast alerts.
+> **A mission-critical, real-time campus intelligence and student grievance redressal command center.** Engineered to transform administrative communication, eliminate bureaucratic delays, and guarantee transparent resolution timelines across university operations.
 
 ---
 
-## 🏗️ System Architecture
+## 📖 The Problem & The Mission
 
-```mermaid
-graph TD
-    subgraph Client ["Vite + React 19 Client"]
-        A[Overview & KPI Telemetry]
-        B[Student Objection & Petition Hub]
-        C[Interactive Pulsing Campus Map]
-        D[Issue Directory & Filters]
-        E[Admin Operations & SLA Triage]
-        F[Investigation Drawer & Appeals]
-    end
+In conventional university environments, student grievances—such as **server downtime during exam deadlines, unfair attendance fines, cafeteria hygiene and price hikes, transport shuttle overcrowding, and damaged lab equipment**—are handled via lost paper applications and opaque administrative delays. Students frequently fear academic retribution when raising individual disputes, while operations teams lack unified geospatial telemetry to dispatch maintenance technicians effectively.
 
-    subgraph Server ["Node.js + Express + Socket.IO"]
-        G[REST API Gateway /api]
-        H[Socket.IO Event Hub]
-        I[SLA Engine & Triage Dispatcher]
-    end
+**Campus Pulse** solves this with a **high-availability command-center interface**:
+1. **Student Whistleblower Protection**: An anonymous encryption mode shields students from academic bias while preserving full investigation traceability.
+2. **SLA-Guaranteed Redressal**: University authorities commit to a legally traceable **Service Level Agreement (24h to 48h)** resolution countdown.
+3. **Collective Student Voice (Petitions)**: Once a petition gathers 100 peer signatures, it is automatically escalated to the **University Syndicate & Dean Review Board**.
+4. **Constitutional Right to Appeal**: Students can challenge any adverse administrative verdict with an instant formal appeal.
 
-    subgraph Database ["SQLite3 (WAL Mode)"]
-        J[(Issues & Objections)]
-        K[(Objection Votes)]
-        L[(Timeline Updates)]
-        M[(System Notifications)]
-    end
+---
 
-    Client -->|REST Requests| G
-    G --> I
-    I --> Database
-    Database --> I
-    I --> H
-    H -->|WebSocket Push| Client
+## 🌟 Core Feature Matrix
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   CAMPUS PULSE PLATFORM                                     │
+├───────────────────────────────┬───────────────────────────────┬─────────────────────────────┤
+│  🎓 Student Objection Hub     │  🗺️ 3D Campus Geospatial Map  │  ⚡ Ops Command & SLA Queue │
+├───────────────────────────────┼───────────────────────────────┼─────────────────────────────┤
+│ • Formal Course & Exam Claims │ • Isometric 3D Campus Grid    │ • Urgent / Minor Triage     │
+│ • Anonymous Whistleblower     │ • DIU Smart Campus & Universal│ • Binding Verdict Publisher │
+│ • 100-Signature Auto-Escalate │ • Glowing Live Beacon Pins    │ • 24h/36h/48h SLA Timers    │
+│ • Photographic Evidence URLs  │ • Hover Previews & Drawers    │ • Syndicate Appeal Pipeline │
+│ • Real-time Peer Upvoting     │ • Live Telemetry Markers      │ • Audit Trail Timeline Logs │
+└───────────────────────────────┴───────────────────────────────┴─────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🏗️ System Architecture & Telemetry Pipeline
+
+```mermaid
+graph TD
+    subgraph Client ["🖥️ Frontend Command Center (React 19 + Vite)"]
+        UI_Dash[Executive KPI Dashboard]
+        UI_Map[3D Isometric Campus Map]
+        UI_Feed[Real-Time Incident Triage Feed]
+        UI_Obj[Student Objection & Petition Portal]
+        UI_MyCases[Personal Case & Appeal Tracker]
+        UI_Drawer[Investigation & Verdict Drawer]
+    end
+
+    subgraph Realtime ["⚡ Real-Time WebSocket Bus (Socket.IO)"]
+        SKT_New[issue:new]
+        SKT_Vote[objection:voted]
+        SKT_Upd[issue:updated]
+        SKT_Notif[notification:new]
+    end
+
+    subgraph Gateway ["⚙️ Enterprise API Gateway (Node.js & Express)"]
+        API_Auth[JWT & bcrypt Auth Service]
+        API_Triage[Triage & Dispatch Engine]
+        API_SLA[SLA Countdown & Risk Monitor]
+        API_Analytics[Velocity & Category Aggregator]
+    end
+
+    subgraph Storage ["💾 High-Performance Database (SQLite3 WAL Mode)"]
+        DB_Users[(Users & Roles)]
+        DB_Issues[(Issues & Objections)]
+        DB_Votes[(Objection Signatures)]
+        DB_Timeline[(Audit Trail Updates)]
+        DB_Notifs[(Urgent Notifications)]
+    end
+
+    Client -->|REST API / Bearer JWT| Gateway
+    Gateway -->|Read / Write Transactions| Storage
+    Storage -->|WAL Pipeline| Gateway
+    Gateway -->|Event Broadcast| Realtime
+    Realtime -->|Push Updates Without Reload| Client
+```
+
+---
+
+## 🔄 Student Objection & Resolution Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor S as 🎓 Student (Tanvir)
+    participant UI as 🖥️ Campus Pulse Portal
+    participant API as ⚙️ Backend API
+    participant DB as 💾 SQLite (WAL)
+    actor A as 🛡️ Operations Admin (Engr. Rafiq)
+
+    S->>UI: Submits Formal Objection with Evidence (Anonymous Mode: ON)
+    UI->>API: POST /api/issues (SLA Target: 24h)
+    API->>DB: Record Issue & Initial Audit Trail
+    API-->>UI: Socket.IO broadcast (issue:new)
+    Note over UI,A: Triage Feed shows #CP2485 [New] (HIGH PRIORITY)
+
+    A->>UI: Inspects 3D Campus Map beacon & assigns Investigator
+    UI->>API: PATCH /api/issues/:id (Status: Under Investigation)
+    API-->>UI: Socket.IO broadcast (issue:updated)
+
+    Note over S,UI: Student tracks live countdown in "My Filed Cases"
+    A->>UI: Publishes Official Administrative Verdict
+    UI->>API: PATCH /api/issues/:id (Status: Resolved)
+    API-->>S: Real-time notification & verdict statement
+
+    alt Student Satisfied
+        S->>UI: Closes ticket with 5-Star feedback
+    else Student Dissatisfied with Verdict
+        S->>UI: Clicks "Submit Syndicate Appeal"
+        UI->>API: POST /api/issues/:id/appeal
+        API->>DB: Status -> Appealed & escalated to Syndicate Board
+    end
+```
+
+---
+
+## 🗺️ Campus Mapping Engine: DIU Ashulia & Universal Adaptability
+
+Campus Pulse features a dual-mode **3D Isometric Vector Blueprint**:
+1. **DIU Ashulia Smart Campus Mode**: Tailored for Daffodil International University permanent campus landmarks:
+   * **Knowledge Tower / Central Library**: Research repositories, study floors, and digital archive.
+   * **Academic & Admin Complex**: Faculty of Science & IT, computer laboratories, and exam halls.
+   * **Student Union & Food Court**: Smart auditorium, multi-vendor cafeteria, and club suites.
+   * **Yunus Khan Scholar Garden (Dorms)**: Student residential village and living quarters.
+   * **Transport Terminal (Gate B)**: Campus shuttle bus fleet bays.
+2. **Universal Campus Mode**: One-click toggle adapts all labels for any university campus globally.
+
+---
+
+## 🔐 Security & Anti-Tamper Design
+* **Password Security**: Salted password hashing with `bcryptjs`.
+* **Stateless Authorization**: Signed JSON Web Tokens (`jsonwebtoken`) with `Bearer` header enforcement.
+* **Whistleblower Anonymity**: Anonymized IDs (`ANON-xxx`) hide student identities from peer view while maintaining internal ombudsperson tracking.
+* **Anti-Scraping / Content Protection**: Global user-select prevention and context-menu protections enabled across all dashboards.
+
+---
+
+## 🚀 Quick Start & Installation
 
 ### Prerequisites
-* **Node.js**: v18+ (tested on Node v24.x)
+* **Node.js**: v18+ (tested on Node.js v24.x)
 * **npm**: v9+
 
-### Installation & Launch
+### 1. Clone & Install
+```bash
+git clone https://github.com/Shreyalien/Campus-Pulse.git
+cd Campus-Pulse
+npm install
+```
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Shreyalien/Campus-Pulse.git
-   cd Campus-Pulse
-   ```
+### 2. Launch Development Environment
+```bash
+npm run dev
+```
+* **Frontend Web Dashboard**: `http://localhost:3000`
+* **Enterprise API Server**: `http://localhost:5001` (automatically proxied by Vite on `:3000/api`)
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Start Fullstack Development Mode:**
-   ```bash
-   npm run dev
-   ```
-   * **Client UI**: `http://localhost:3000` (proxies `/api` and `/socket.io` to backend)
-   * **API & Socket.IO Server**: `http://localhost:5001`
-
----
-
-## 📡 REST API Reference
-
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `/api/health` | `GET` | Health check & system record counts |
-| `/api/issues` | `GET` | Retrieve issues/objections with multi-filters (`type`, `category`, `status`, `search`) |
-| `/api/issues/:id` | `GET` | Single issue with investigation timeline and vote status |
-| `/api/issues` | `POST` | Lodge a new issue, formal student objection, or campus petition |
-| `/api/issues/:id/vote` | `POST` | Toggle peer upvote / petition signature |
-| `/api/issues/:id/appeal` | `POST` | Lodge a formal student appeal against a verdict |
-| `/api/issues/:id` | `PATCH` | Update status, assign officer, and publish official verdict |
-| `/api/analytics/summary` | `GET` | KPI metrics (Active, Objections, SLA compliance, Endorsements) |
-| `/api/analytics/trends` | `GET` | 7-day velocity chart data |
-| `/api/analytics/categories` | `GET` | Category distribution |
-| `/api/analytics/departments` | `GET` | Departmental resolution workload |
-| `/api/notifications` | `GET` | System notification stream |
+### 3. One-Click Demo Accounts
+For rapid presentation and evaluation, use the pre-seeded demo accounts:
+| Role | Name | Email | Password | Responsibilities |
+| :--- | :--- | :--- | :--- | :--- |
+| **Student CR** | Tanvir Ahmed | `student@campus.edu` | `password123` | Lodge formal disputes, sign petitions, track SLA countdowns & appeal verdicts. |
+| **Chief Operations Lead** | Engr. M. Rafiq | `admin@campus.edu` | `admin123` | Triage incident feed, assign officers, enforce SLA timers & publish verdicts. |
+| **Faculty Exam Committee** | Dr. M. Rahman | `faculty@campus.edu` | `faculty123` | Audit course evaluations, lab server crash investigations & conduct hearings. |
 
 ---
 
-## 🎨 Design Philosophy
-Adheres to a **Command-Center Dark Palette**:
-* Background: `#080b10` deep graphite
-* Surface / Card: `#0e131a` and `#111822` with hairline borders (`#1e293b`)
-* Signal Accents: `#d9ff62` (Electric Lime), `#f59e0b` (Amber Alert), `#ef4444` (Critical Red)
-* Micro-interactions powered by **Framer Motion**
-* Data visualizations via **Recharts**
+## 📡 Enterprise REST API Specification
+
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/auth/login` | `POST` | Public | Authenticate user & return signed JWT token |
+| `/api/auth/register` | `POST` | Public | Register student with student ID & department |
+| `/api/auth/me` | `GET` | Bearer | Retrieve authenticated session details |
+| `/api/auth/demo-users` | `GET` | Public | Quick 1-click presentation demo accounts |
+| `/api/issues` | `GET` | Public | Query issues & objections with multi-filter |
+| `/api/issues` | `POST` | Optional | Lodge a formal objection, petition, or report |
+| `/api/issues/:id` | `GET` | Public | Single ticket with full investigation timeline |
+| `/api/issues/:id/vote` | `POST` | Optional | Toggle peer endorsement / petition signature |
+| `/api/issues/:id/appeal`| `POST` | Optional | Lodge formal appeal to University Syndicate |
+| `/api/issues/:id` | `PATCH` | Bearer | Update status, assign officer & publish verdict |
+| `/api/analytics/summary` | `GET` | Public | KPI telemetry (Active, SLA compliance, Rating) |
+| `/api/analytics/trends` | `GET` | Public | Dual-curve report volume telemetry |
 
 ---
 
